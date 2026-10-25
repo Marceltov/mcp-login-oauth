@@ -6,21 +6,27 @@ SDK's handler demands a client_secret, so public clients (claude.ai) could never
 code and token maps to a *grant*: whatever `check_login` returned for that login, for example a
 service token minted from the submitted password. Tool code reads it from
 `get_access_token().claims["grant"]`.
+
+Codes and tokens are bound to the resource the client asked for (RFC 8707): one issued for another
+server is refused here. The code redirect names this server in `iss` (RFC 9207).
 """
 
 import asyncio
 import base64
 import binascii
 import hmac
+import inspect
 import logging
 import secrets
 import time
-from collections.abc import Awaitable, Callable, Mapping, Sequence
+from collections.abc import Awaitable, Callable, Sequence
+from dataclasses import dataclass
 from urllib.parse import urlsplit
 
 from fastmcp.server.auth import AccessToken, OAuthProvider
 from fastmcp.server.auth.auth import ClientRegistrationOptions, RevocationOptions
 from key_value.aio.protocols import AsyncKeyValue
+from mcp.server.auth.handlers.metadata import MetadataHandler
 from mcp.server.auth.provider import (
     AuthorizationCode,
     AuthorizationParams,
@@ -28,6 +34,7 @@ from mcp.server.auth.provider import (
     TokenError,
     construct_redirect_uri,
 )
+from mcp.server.auth.routes import build_metadata, cors_middleware
 from mcp.shared.auth import OAuthClientInformationFull, OAuthToken
 from starlette.requests import Request
 from starlette.responses import JSONResponse, RedirectResponse, Response
@@ -39,7 +46,20 @@ log = logging.getLogger("mcp_login_oauth")
 
 STATIC_CLIENT_ID = "static"
 
-CheckLogin = Callable[[Mapping[str, str]], Awaitable[dict]]
+METADATA_PATH = "/.well-known/oauth-authorization-server"
+
+
+@dataclass(frozen=True)
+class LoginClient:
+    """The client a login is for, as it registered itself. `client_name` is what the client calls
+    itself (falls back to the client id), so treat it as a label, not as proof of identity."""
+
+    client_id: str
+    client_name: str
+    redirect_uri: str
+
+
+CheckLogin = Callable[..., Awaitable[dict]]  # (form) or (form, client: LoginClient) -> grant
 OnRevoke = Callable[[dict], Awaitable[None]]
 VerifyStatic = Callable[[str], Awaitable[dict | None]]
 
@@ -61,6 +81,7 @@ class LoginOAuthProvider(OAuthProvider):
         self.service_name = service_name
         self.fields = list(fields)
         self.check_login = check_login
+        self._check_wants_client = _takes_two_arguments(check_login)
         self.token_prefix = token_prefix
         self.on_revoke = on_revoke
         self.verify_static = verify_static
@@ -97,7 +118,8 @@ class LoginOAuthProvider(OAuthProvider):
         if not data:
             raise TokenError("invalid_grant", "Authorization code not found or already used.")
         await self.store.delete(authorization_code.code, collection="codes")
-        return await self._issue(client.client_id, authorization_code.scopes, data["grant"])
+        return await self._issue(client.client_id, authorization_code.scopes, data["grant"],
+                                 authorization_code.resource)
 
     # -- tokens -----------------------------------------------------------------------------
 
@@ -113,17 +135,22 @@ class LoginOAuthProvider(OAuthProvider):
         data = await self.store.get(refresh_token.token, collection="refresh")
         if not data:
             raise TokenError("invalid_grant", "Refresh token not found or already used.")
+        if not self._for_us(data.get("resource")):
+            # Bound to another server, or to our old URL (base URL changed): make the client log in again.
+            raise TokenError("invalid_grant", "Refresh token was issued for another resource.")
         if not set(scopes) <= set(refresh_token.scopes):
             raise TokenError("invalid_scope", "Requested scopes exceed the original grant.")
         await self._drop(data["access"], refresh_token.token)  # rotate: the old pair dies, the grant lives on
-        return await self._issue(client.client_id, scopes or refresh_token.scopes, data["grant"])
+        return await self._issue(client.client_id, scopes or refresh_token.scopes, data["grant"],
+                                 data.get("resource"))
 
     async def load_access_token(self, token: str) -> AccessToken | None:
         data = await self.store.get(token, collection="access")
-        if not data:
+        if not data or not self._for_us(data.get("resource")):
             return None
         return AccessToken(token=token, client_id=data["client_id"], scopes=data["scopes"],
-                           expires_at=data["expires_at"], claims={"grant": data["grant"]})
+                           expires_at=data["expires_at"], resource=data.get("resource"),
+                           claims={"grant": data["grant"]})
 
     async def verify_token(self, token: str) -> AccessToken | None:
         if token.startswith(self.token_prefix):
@@ -158,9 +185,27 @@ class LoginOAuthProvider(OAuthProvider):
     # -- the login page ---------------------------------------------------------------------
 
     def get_routes(self, mcp_path: str | None = None) -> list[Route]:
-        routes = [r for r in super().get_routes(mcp_path) if getattr(r, "path", None) != "/revoke"]
+        routes = []
+        for r in super().get_routes(mcp_path):
+            path = getattr(r, "path", None)
+            if path == METADATA_PATH:
+                routes.append(self._metadata_route(r))
+            elif path != "/revoke":
+                routes.append(r)
         return [*routes, Route("/login", self._login, methods=["GET", "POST"]),
                 Route("/revoke", self._revoke, methods=["POST"])]
+
+    def _metadata_route(self, route: Route) -> Route:
+        """FastMCP's metadata, plus the RFC 9207 flag: /login sends `iss`, and a server that does has to
+        say so. The SDK bakes the document into the handler, so it is rebuilt the way FastMCP builds it."""
+        metadata = build_metadata(self.base_url, self.service_documentation_url,
+                                  self.client_registration_options or ClientRegistrationOptions(),
+                                  self.revocation_options or RevocationOptions())
+        metadata.issuer = self.issuer_url
+        metadata.authorization_response_iss_parameter_supported = True
+        return Route(route.path, endpoint=cors_middleware(MetadataHandler(metadata).handle, ["GET", "OPTIONS"]),
+                     methods=route.methods or ["GET", "OPTIONS"], name=route.name,
+                     include_in_schema=route.include_in_schema)
 
     async def _revoke(self, request: Request) -> Response:
         """RFC 7009 for public and confidential clients. A token that isn't the caller's is left alone, and
@@ -214,10 +259,14 @@ class LoginOAuthProvider(OAuthProvider):
         client = await self.get_client(pending["client_id"])
         redirect = str(params.redirect_uri)
 
+        who = LoginClient(client_id=pending["client_id"],
+                          client_name=(client.client_name if client else None) or pending["client_id"],
+                          redirect_uri=redirect)
+
         def page(error: str = "", status: int = 200) -> Response:
             return login_page(service_name=self.service_name, fields=self.fields, pending_id=pending_id,
-                              client_name=(client.client_name if client else None) or pending["client_id"],
-                              redirect_host=urlsplit(redirect).netloc or redirect, error=error, status=status)
+                              client_name=who.client_name, redirect_host=_host(redirect), error=error,
+                              status=status)
 
         if request.method == "GET":
             return page()
@@ -225,7 +274,7 @@ class LoginOAuthProvider(OAuthProvider):
         # Only declared fields, only text: a missing field is "", an uploaded file is dropped.
         values = {f.name: v if isinstance(v := form.get(f.name, ""), str) else "" for f in self.fields}
         try:
-            grant = await self.check_login(values)
+            grant = await (self.check_login(values, who) if self._check_wants_client else self.check_login(values))
         except LoginRejected as rejected:
             await asyncio.sleep(self.failed_login_delay)
             attempts = pending["attempts"] + 1
@@ -248,15 +297,24 @@ class LoginOAuthProvider(OAuthProvider):
                                  resource=params.resource)
         await self.store.put(code.code, {"code": code.model_dump(mode="json"), "grant": grant}, collection="codes",
                              ttl=self.code_ttl)
-        return RedirectResponse(construct_redirect_uri(redirect, code=code.code, state=params.state), status_code=302)
+        # RFC 9207: clients compare `iss` byte for byte with the metadata's `issuer`, so send exactly that.
+        return RedirectResponse(construct_redirect_uri(redirect, code=code.code, state=params.state,
+                                                       iss=str(self.issuer_url)), status_code=302)
 
     # -- helpers ----------------------------------------------------------------------------
 
-    async def _issue(self, client_id: str, scopes: list[str], grant: dict) -> OAuthToken:
+    def _for_us(self, resource: str | None) -> bool:
+        """RFC 8707 audience check: the base URL or the MCP endpoint. Clients that sent no resource pass."""
+        if not resource:
+            return True
+        ours = {str(u).rstrip("/") for u in (self.base_url, self._resource_url) if u}
+        return resource.rstrip("/") in ours
+
+    async def _issue(self, client_id: str, scopes: list[str], grant: dict, resource: str | None) -> OAuthToken:
         access = self.token_prefix + secrets.token_urlsafe(32)
         refresh = self.token_prefix + secrets.token_urlsafe(32)
         now = int(time.time())
-        common = {"client_id": client_id, "scopes": scopes, "grant": grant}
+        common = {"client_id": client_id, "scopes": scopes, "grant": grant, "resource": resource}
         await self.store.put(access, {**common, "refresh": refresh, "expires_at": now + self.access_ttl},
                              collection="access", ttl=self.access_ttl)
         await self.store.put(refresh, {**common, "access": access, "expires_at": now + self.refresh_ttl},
@@ -267,3 +325,22 @@ class LoginOAuthProvider(OAuthProvider):
     async def _drop(self, access: str, refresh: str) -> None:
         await self.store.delete(access, collection="access")
         await self.store.delete(refresh, collection="refresh")
+
+
+def _host(url: str) -> str:
+    """Where a redirect really goes: host and port, never the userinfo, which can pose as a host
+    (`https://claude.ai@evil.example/` goes to evil.example)."""
+    u = urlsplit(url)
+    if not u.hostname:
+        return url
+    return f"{u.hostname}:{u.port}" if u.port else u.hostname
+
+
+def _takes_two_arguments(fn: Callable) -> bool:
+    """Whether `check_login` wants the client as well as the form. One-argument callbacks (v0.1) still work."""
+    try:
+        params = inspect.signature(fn).parameters.values()
+    except (TypeError, ValueError):
+        return False
+    positional = [p for p in params if p.kind in (p.POSITIONAL_ONLY, p.POSITIONAL_OR_KEYWORD)]
+    return len(positional) >= 2 or any(p.kind is p.VAR_POSITIONAL for p in params)

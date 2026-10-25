@@ -27,3 +27,15 @@ async def test_bearer_and_basic_untouched():
 async def test_websocket_scope_passes_through():
     scope = {"type": "websocket", "headers": [(b"authorization", b"raw")]}
     assert await run(scope) is scope
+
+
+async def test_listed_schemes_become_bearer():
+    seen = {}
+
+    async def app(scope, receive, send):
+        seen["scope"] = scope
+    for value in (b"Token abc", b"token abc"):
+        await BearerPrefixMiddleware(app, schemes=("Token",))(http((b"authorization", value)), None, None)
+        assert seen["scope"]["headers"] == [(b"authorization", b"Bearer abc")]
+    await BearerPrefixMiddleware(app, schemes=("Token",))(http((b"authorization", b"Basic xyz")), None, None)
+    assert seen["scope"]["headers"] == [(b"authorization", b"Basic xyz")]

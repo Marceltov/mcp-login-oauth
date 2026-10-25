@@ -2,7 +2,7 @@
 
 from mcp_login_oauth.middleware import BearerPrefixMiddleware
 from mcp_login_oauth.pages import LoginField
-from mcp_login_oauth.provider import LoginOAuthProvider, LoginRejected
+from mcp_login_oauth.provider import LoginClient, LoginOAuthProvider, LoginRejected
 from mcp_login_oauth.store import build_store
 
-__all__ = ["BearerPrefixMiddleware", "LoginField", "LoginOAuthProvider", "LoginRejected", "build_store"]
+__all__ = ["BearerPrefixMiddleware", "LoginClient", "LoginField", "LoginOAuthProvider", "LoginRejected", "build_store"]

@@ -48,3 +48,22 @@ def test_error_and_status():
     assert r.status_code == 401 and "Wrong password." in r.body.decode()
     dead = dead_end_page("X", "Login link expired", "Links work once.", 400)
     assert dead.status_code == 400 and "Reconnect" in dead.body.decode()
+
+
+def test_hint_and_group_render_as_a_collapsed_section():
+    fields = [LoginField("username", "Username"),
+              LoginField("token", "API token", type="password", group="Signed in through single sign-on?",
+                         hint="Paste the API token <from My Profile>.")]
+    html = page(fields=fields).body.decode()
+    details = html[html.index("<details>"):html.index("</details>")]
+    assert "<summary>Signed in through single sign-on?</summary>" in details
+    assert 'name="token"' in details and 'name="username"' not in details
+    assert "Paste the API token &lt;from My Profile&gt;." in details
+    assert html.index('name="username"') < html.index("<details>") < html.index("<button>")
+
+
+def test_fields_of_one_group_share_one_section():
+    fields = [LoginField("a", "A", group="More"), LoginField("b", "B"), LoginField("c", "C", group="More")]
+    html = page(fields=fields).body.decode()
+    assert html.count("<details>") == 1
+    assert html.index('name="b"') < html.index("<details>") < html.index('name="a"') < html.index('name="c"')
