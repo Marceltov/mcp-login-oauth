@@ -26,7 +26,7 @@ Used by [trilium-mcp](https://github.com/Marceltov/trilium-mcp),
 Pinned by git tag until there is a PyPI release:
 
 ```bash
-uv add "mcp-login-oauth @ git+https://github.com/Marceltov/mcp-login-oauth@v0.1.0"
+uv add "mcp-login-oauth @ git+https://github.com/Marceltov/mcp-login-oauth@v0.1.1"
 ```
 
 Needs Python ≥ 3.12 and FastMCP ≥ 4.1.3.
@@ -107,4 +107,6 @@ uv run pytest -q
 
 ## License
 
-MIT
+Copyright © 2026 Marcel Bruckner.
+
+Licensed under the [GNU Affero General Public License v3.0 or later](LICENSE) (AGPL-3.0-or-later). You may use, modify, and redistribute it, but any modified version — **including one you run as a network service** — must be released under the same license with its source made available to its users, and the original copyright notice preserved. See [LICENSE](LICENSE) for the full terms.

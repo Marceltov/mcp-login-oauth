@@ -28,8 +28,10 @@ services themselves check the login, and the login is what mints the per-client 
 or API token). So the service has to see the credentials once anyway.
 
 Distribution is a pinned git tag for now. The package is a normal `src/` layout with a build backend,
-so publishing to PyPI later needs no restructuring. It is MIT-licensed so that every consumer can use it:
-the MCP servers are AGPL-3.0, while trilium-llm-wiki is MIT.
+so publishing to PyPI later needs no restructuring. It is AGPL-3.0-or-later, like the MCP servers
+(v0.1.0 went out as MIT by mistake and was superseded by v0.1.1). trilium-llm-wiki, which is MIT, can
+depend on it: its own code stays MIT, and its published image follows the AGPL as a whole, which public
+source already satisfies.
 
 ### Consequences
 
