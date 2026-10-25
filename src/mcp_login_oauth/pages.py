@@ -9,12 +9,16 @@ from starlette.responses import HTMLResponse
 
 _STYLE = ("body{font-family:system-ui,sans-serif;max-width:32rem;margin:4rem auto;padding:0 1rem;line-height:1.5}"
           "label{display:block;margin:.6rem 0}input,button{font:inherit;padding:.4rem;margin:.3rem 0;width:100%;"
-          "box-sizing:border-box}")
+          "box-sizing:border-box}details{margin:1rem 0}summary{cursor:pointer}.hint{margin:.6rem 0 0}")
 
 
 @dataclass(frozen=True)
 class LoginField:
-    """One input of the login form. Every value reaches `check_login` as a string ("" when left empty)."""
+    """One input of the login form. Every value reaches `check_login` as a string ("" when left empty).
+
+    `hint` is a sentence shown above the input. Fields with the same `group` go into one collapsed
+    section, titled by the group, after the ungrouped fields: an alternative way to log in that most
+    people don't need, such as an API token for single-sign-on accounts."""
 
     name: str
     label: str
@@ -22,6 +26,8 @@ class LoginField:
     required: bool = False
     autocomplete: str | None = None
     inputmode: str | None = None
+    hint: str | None = None
+    group: str | None = None
 
 
 def _page(service_name: str, inner: str, status: int) -> HTMLResponse:
@@ -43,14 +49,30 @@ def _input(field: LoginField, first: bool) -> str:
         attrs.append(f'inputmode="{escape(field.inputmode)}"')
     if first:
         attrs.append("autofocus")
-    return f"<label>{escape(field.label)} <input {' '.join(attrs)}></label>"
+    hint = f'<p class="hint">{escape(field.hint)}</p>' if field.hint else ""
+    return f"{hint}<label>{escape(field.label)} <input {' '.join(attrs)}></label>"
+
+
+def _inputs(fields: Sequence[LoginField]) -> str:
+    """Ungrouped fields in order, then one collapsed section per group, in order of first appearance.
+    The first ungrouped field gets the focus; a field inside a closed section can't take it."""
+    plain = [f for f in fields if not f.group]
+    groups: dict[str, list[LoginField]] = {}
+    for f in fields:
+        if f.group:
+            groups.setdefault(f.group, []).append(f)
+    html = "".join(_input(f, i == 0) for i, f in enumerate(plain))
+    for title, members in groups.items():
+        html += (f"<details><summary>{escape(title)}</summary>"
+                 f"{''.join(_input(f, False) for f in members)}</details>")
+    return html
 
 
 def login_page(*, service_name: str, fields: Sequence[LoginField], pending_id: str, client_name: str,
                redirect_host: str, error: str = "", status: int = 200) -> HTMLResponse:
     """Who is asking, where the code goes, and the form."""
     err = f'<p style="color:#b00">{escape(error)}</p>' if error else ""
-    inputs = "".join(_input(f, i == 0) for i, f in enumerate(fields))
+    inputs = _inputs(fields)
     return _page(service_name,
                  f"{err}<p><b>{escape(client_name)}</b> wants access to your {escape(service_name)}. After login "
                  f"you will be sent to <b>{escape(redirect_host)}</b>. Only continue if you started this.</p>"

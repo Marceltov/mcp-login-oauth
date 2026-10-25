@@ -1,6 +1,7 @@
 import io
 
-from conftest import FIELDS, authorize, login, register
+from conftest import FIELDS, REDIRECT, authorize, login, register, whoami
+
 from mcp_login_oauth import LoginField, LoginRejected
 
 
@@ -85,3 +86,27 @@ def test_form_values_reach_check_as_strings(app_factory):
 
 def test_login_with_the_helper_still_works(client):
     assert login(client)["token_type"].lower() == "bearer"
+
+
+def test_check_login_can_ask_who_is_logging_in(app_factory):
+    seen = []
+
+    async def record(form, client):
+        seen.append(client)
+        return {"name": f"MCP: {client.client_name}"}
+    with app_factory(check_login=record) as c:
+        tokens = login(c)
+        assert whoami(c, tokens["access_token"]) == {"name": "MCP: claude.ai"}
+    assert seen[0].client_id == tokens["client_id"] and seen[0].redirect_uri == REDIRECT
+
+
+def test_page_shows_the_real_redirect_host(app_factory):
+    """userinfo in the redirect URI must not pass for the host: claude.ai@evil.example goes to evil.example."""
+    tricky = "http://claude.ai@localhost:9/cb"
+    with app_factory() as c:
+        client_id = register(c, redirect_uris=[tricky])["client_id"]
+        r = c.get("/authorize", params={"response_type": "code", "client_id": client_id, "redirect_uri": tricky,
+                                        "code_challenge": "x" * 43, "code_challenge_method": "S256"},
+                  follow_redirects=False)
+        page = c.get(r.headers["location"]).text
+    assert "<b>localhost:9</b>" in page and "claude.ai@" not in page

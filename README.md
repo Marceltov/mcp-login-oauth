@@ -11,7 +11,10 @@ The library provides:
 - dynamic client registration, PKCE, refresh rotation and revocation, including revocation for public
   clients, which the MCP SDK's own `/revoke` rejects;
 - a Fernet-encrypted file store that survives restarts;
-- the login page with configurable fields, and honest dead-end pages for broken flows;
+- the login page with configurable fields, hints and collapsed sections for alternative logins, and
+  honest dead-end pages for broken flows;
+- tokens bound to this server (RFC 8707 resource indicators) and the issuer named on the code redirect
+  (RFC 9207);
 - protection against password guessing: a delay after each failed login, and login links that end after
   5 failures or 10 minutes;
 - optional static header tokens next to OAuth.
@@ -26,7 +29,7 @@ Used by [trilium-mcp](https://github.com/Marceltov/trilium-mcp),
 Pinned by git tag until there is a PyPI release:
 
 ```bash
-uv add "mcp-login-oauth @ git+https://github.com/Marceltov/mcp-login-oauth@v0.1.1"
+uv add "mcp-login-oauth @ git+https://github.com/Marceltov/mcp-login-oauth@v0.2.0"
 ```
 
 Needs Python ≥ 3.12 and FastMCP ≥ 4.1.3.
@@ -71,12 +74,40 @@ async def get_app_info() -> dict:
 
 | Argument | Signature | Purpose |
 |---|---|---|
-| `check_login` | `async (form: Mapping[str, str]) -> dict` | Turn the submitted form into the grant, or raise `LoginRejected("shown on the page")`. Any other exception shows "Could not reach <service>" (HTTP 502) and doesn't count as a failed attempt. |
+| `check_login` | `async (form: Mapping[str, str]) -> dict`<br>or `async (form, client: LoginClient) -> dict` | Turn the submitted form into the grant, or raise `LoginRejected("shown on the page")`. Any other exception shows "Could not reach <service>" (HTTP 502) and doesn't count as a failed attempt. Take a second argument to learn which client the login is for (see below). |
 | `on_revoke` | `async (grant: dict) -> None` | Optional. Clean up when a client revokes, for example log out a minted token. Failures are logged; the revocation still happens. |
 | `verify_static` | `async (token: str) -> dict \| None` | Optional. Accept a header token that isn't an OAuth token (a raw service token, a static password); the returned dict is the grant. Tokens starting with `token_prefix` never reach it. |
 
+`LoginClient` carries `client_id`, `client_name` (what the client registered as, falling back to the
+id) and `redirect_uri`. Use it to label a credential minted per client, for example an InvoiceNinja
+API token named `MCP: claude.ai`. The name is chosen by the client, so it is a label, not proof of
+identity.
+
 Clients that send a raw token without `Bearer ` (ETAPI clients) need `BearerPrefixMiddleware` around
-the app.
+the app. `BearerPrefixMiddleware(app, schemes=("Token",))` also rewrites `Token <token>`, the form
+Paperless clients send.
+
+## Login fields
+
+```python
+LoginField(name, label, type="text", required=False, autocomplete=None, inputmode=None,
+           hint=None, group=None)
+```
+
+`type` is `text`, `password` or `email`. `hint` is a sentence shown above the input. Fields with
+the same `group` go into one collapsed section titled by the group, after the other fields. Use it for
+a way to log in that most people don't need:
+
+```python
+fields = [
+    LoginField("username", "Paperless username", autocomplete="username"),
+    LoginField("password", "Paperless password", type="password", autocomplete="current-password"),
+    LoginField("code", "Two-factor code, if enabled", autocomplete="one-time-code", inputmode="numeric"),
+    LoginField("token", "API token", type="password", autocomplete="off",
+               group="Signed in through single sign-on, with no Paperless password?",
+               hint="Paste the API token from My Profile in Paperless instead, and leave the fields above empty."),
+]
+```
 
 ## Defaults
 
@@ -93,6 +124,11 @@ the app.
 
 - The form is never stored or logged. Only the grant is stored, encrypted with a key derived from
   `secret`; changing the secret logs every client out.
+- A client that names a `resource` (RFC 8707) gets codes and tokens bound to it. A token bound to
+  anything other than `base_url` or the MCP endpoint is refused, and so is its refresh: this also
+  logs clients out when `base_url` changes. Clients that send no `resource` are accepted.
+- The code redirect carries `iss` (RFC 9207), and the authorization server metadata advertises
+  `authorization_response_iss_parameter_supported`.
 - Servers moving to this library from their own OAuth code don't carry their stored logins over:
   connected clients log in once more.
 - The file store uses `caio`'s thread backend: its io_uring backend takes locked kernel memory per

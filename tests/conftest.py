@@ -60,26 +60,28 @@ def register(http, name="claude.ai", **extra) -> dict:
     return r.json()
 
 
-def authorize(http, client_id) -> tuple[str, str]:
-    """Start a login: (pending id, PKCE verifier)."""
+def authorize(http, client_id, **extra) -> tuple[str, str]:
+    """Start a login: (pending id, PKCE verifier). `extra` adds authorize parameters (resource, ...)."""
     verifier = secrets.token_urlsafe(48)
     challenge = base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).rstrip(b"=").decode()
     r = http.get("/authorize", params={"response_type": "code", "client_id": client_id, "redirect_uri": REDIRECT,
-                                       "code_challenge": challenge, "code_challenge_method": "S256", "state": "s"},
+                                       "code_challenge": challenge, "code_challenge_method": "S256", "state": "s",
+                                       **extra},
                  follow_redirects=False)
     assert r.status_code == 302, r.text
     return httpx.URL(r.headers["location"]).params["id"], verifier
 
 
-def login(http, password="pw") -> dict:
-    """register -> authorize -> /login -> /token; the token JSON plus client_id."""
+def login(http, password="pw", **extra) -> dict:
+    """register -> authorize -> /login -> /token; the token JSON plus client_id. `extra` goes to /authorize."""
     client_id = register(http)["client_id"]
-    pending, verifier = authorize(http, client_id)
+    pending, verifier = authorize(http, client_id, **extra)
     r = http.post("/login", data={"id": pending, "password": password}, follow_redirects=False)
     assert r.status_code == 302, r.text
     code = httpx.URL(r.headers["location"]).params["code"]
     r = http.post("/token", data={"grant_type": "authorization_code", "code": code, "redirect_uri": REDIRECT,
-                                  "client_id": client_id, "code_verifier": verifier})
+                                  "client_id": client_id, "code_verifier": verifier,
+                                  **({"resource": extra["resource"]} if "resource" in extra else {})})
     assert r.status_code == 200, r.text
     return {**r.json(), "client_id": client_id}
 

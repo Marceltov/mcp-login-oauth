@@ -1,4 +1,5 @@
-from conftest import BASE, call_whoami, login, whoami
+import httpx
+from conftest import BASE, authorize, call_whoami, login, register, whoami
 
 
 def test_discovery_names_the_base_url(client):
@@ -36,3 +37,28 @@ def test_logins_survive_a_restart(app_factory):
         tokens = login(first)
     with app_factory() as second:
         assert whoami(second, tokens["access_token"]) == {"credential": "minted-1"}
+
+
+def test_redirect_carries_the_advertised_issuer(client):
+    """RFC 9207: the code redirect names the authorization server, and discovery says it does."""
+    meta = client.get("/.well-known/oauth-authorization-server").json()
+    assert meta["authorization_response_iss_parameter_supported"] is True
+    client_id = register(client)["client_id"]
+    pending, _ = authorize(client, client_id)
+    r = client.post("/login", data={"id": pending, "password": "pw"}, follow_redirects=False)
+    assert httpx.URL(r.headers["location"]).params["iss"] == meta["issuer"]
+
+
+def test_token_for_this_server_works(client):
+    for resource in (BASE, f"{BASE}/mcp", f"{BASE}/mcp/"):
+        tokens = login(client, resource=resource)
+        assert whoami(client, tokens["access_token"]) == {"credential": "minted-1"}
+
+
+def test_token_for_another_server_is_refused(client):
+    """RFC 8707: a token bound to some other resource neither works here nor refreshes."""
+    tokens = login(client, resource="https://elsewhere.example/mcp")
+    assert call_whoami(client, tokens["access_token"]).status_code == 401
+    r = client.post("/token", data={"grant_type": "refresh_token", "refresh_token": tokens["refresh_token"],
+                                    "client_id": tokens["client_id"]})
+    assert r.status_code in (400, 401) and r.json()["error"] == "invalid_grant", r.text
