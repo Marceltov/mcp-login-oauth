@@ -1,13 +1,17 @@
 """OAuth 2.1 authorization server whose login is a form checked by the service behind the MCP server.
 
 FastMCP and the MCP SDK serve discovery, dynamic client registration, /authorize and /token (PKCE) on
-top of these methods. This module adds /login (the one page a person sees) and its own /revoke. Every
+top of these methods. This module adds /login (the one page a person sees) and replaces /revoke: the
+SDK's handler demands a client_secret, so public clients (claude.ai) could never revoke. Every
 code and token maps to a *grant*: whatever `check_login` returned for that login, for example a
 service token minted from the submitted password. Tool code reads it from
 `get_access_token().claims["grant"]`.
 """
 
 import asyncio
+import base64
+import binascii
+import hmac
 import logging
 import secrets
 import time
@@ -26,7 +30,7 @@ from mcp.server.auth.provider import (
 )
 from mcp.shared.auth import OAuthClientInformationFull, OAuthToken
 from starlette.requests import Request
-from starlette.responses import RedirectResponse, Response
+from starlette.responses import JSONResponse, RedirectResponse, Response
 from starlette.routing import Route
 
 from mcp_login_oauth.pages import LoginField, dead_end_page, login_page
@@ -154,7 +158,39 @@ class LoginOAuthProvider(OAuthProvider):
     # -- the login page ---------------------------------------------------------------------
 
     def get_routes(self, mcp_path: str | None = None) -> list[Route]:
-        return [*super().get_routes(mcp_path), Route("/login", self._login, methods=["GET", "POST"])]
+        routes = [r for r in super().get_routes(mcp_path) if getattr(r, "path", None) != "/revoke"]
+        return [*routes, Route("/login", self._login, methods=["GET", "POST"]),
+                Route("/revoke", self._revoke, methods=["POST"])]
+
+    async def _revoke(self, request: Request) -> Response:
+        """RFC 7009 for public and confidential clients. A token that isn't the caller's is left alone, and
+        the answer is 200 either way, so the endpoint reveals nothing about other clients' tokens."""
+        form = await request.form()
+        client_id, secret = form.get("client_id"), form.get("client_secret")
+        basic = request.headers.get("authorization", "")
+        if basic.lower().startswith("basic "):
+            try:
+                client_id, _, secret = base64.b64decode(basic[6:]).decode().partition(":")
+            except (binascii.Error, UnicodeDecodeError):
+                return JSONResponse({"error": "invalid_client"}, status_code=401)
+        client = await self.get_client(client_id) if isinstance(client_id, str) and client_id else None
+        if client is None:
+            return JSONResponse({"error": "invalid_client"}, status_code=401)
+        if client.token_endpoint_auth_method != "none":
+            if not (isinstance(secret, str) and client.client_secret
+                    and hmac.compare_digest(secret.encode(), client.client_secret.encode())):
+                return JSONResponse({"error": "invalid_client"}, status_code=401)
+        token = form.get("token")
+        if isinstance(token, str) and token:
+            for collection in ("refresh", "access"):
+                data = await self.store.get(token, collection=collection)
+                if data and data["client_id"] == client.client_id:
+                    found = RefreshToken(token=token, client_id=client.client_id, scopes=data["scopes"]) \
+                        if collection == "refresh" else \
+                        AccessToken(token=token, client_id=client.client_id, scopes=data["scopes"])
+                    await self.revoke_token(found)
+                    break
+        return Response(status_code=200)
 
     def _dead_end(self, heading: str, what: str, status: int) -> Response:
         return dead_end_page(self.service_name, heading, what, status)
