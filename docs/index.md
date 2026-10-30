@@ -15,6 +15,9 @@ hide:
 
 </div>
 
+!!! tip "Building in TypeScript?"
+    This library is Python only. TypeScript apps, with or without an MCP endpoint, sign in with Better Auth: see [TypeScript: use Better Auth](typescript.md).
+
 ## How it works
 
 ```mermaid

@@ -22,6 +22,9 @@ The library provides:
 What this library stands for is in [docs/values.md](docs/values.md), where it is going in
 [docs/roadmap.md](docs/roadmap.md), both also on the [documentation site](https://marceltov.github.io/mcp-login-oauth/).
 
+**TypeScript?** This library is Python only; TypeScript apps sign in with Better Auth, see
+[TypeScript: use Better Auth](https://marceltov.github.io/mcp-login-oauth/typescript/).
+
 Used by [trilium-mcp](https://github.com/Marceltov/trilium-mcp),
 [invoiceninja-mcp](https://github.com/Marceltov/invoiceninja-mcp),
 [paperless-ngx-mcp](https://github.com/Marceltov/paperless-ngx-mcp) and the recall engine in
