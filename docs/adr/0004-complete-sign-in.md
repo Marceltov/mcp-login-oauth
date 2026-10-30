@@ -4,27 +4,34 @@ date: 2026-10-30
 decision-makers: Marcel Bruckner
 ---
 
-# A complete sign-in for the TypeScript apps: magic links, passkeys, several OIDC providers and the browser session
+# A complete sign-in in both packages: magic links, passkeys, several OIDC providers and the browser session
 
 ## Context and Problem Statement
 
-The TypeScript package (ADR 0003) signs in MCP clients only, with one login kind: a form or one OIDC provider. Marcel's apps need more:
+Both packages sign in MCP clients only. The Python package has one login kind, a form; the TypeScript package (ADR 0003) has a form or one OIDC provider. Marcel's apps need more:
 
 * **Magic links**, which Marcel uses regularly, and **passkeys**.
 * **Several OIDC providers** at once (authentik, Authelia, Google, Apple, …), not one.
 * **The web pages' own sign-in.** questlog's and freundebuch's pages need a browser session too. Each app would carry a second sign-in next to the library, the copying this library exists to stop.
 
-How does the package grow into the whole sign-in of an app, and what does it own versus the app?
+How do the packages grow into the whole sign-in of an app, what do they own versus the app, and do we build it or take an existing library?
 
 ## Decision Drivers
 
 * Fix once, for every app (ADR 0001, ADR 0003): what every app would write the same way belongs in the library.
+* The same features in Python and TypeScript ([values](../values.md) V3).
 * No new way in for an attacker. Anyone can register an MCP client (RFC 7591), so an attacker can start a sign-in for someone else's address.
 * The library reads no environment. Each app names its own variables (`QUESTLOG_*`, `FREUNDEBUCH_*`) and passes values in.
 * A person is who they proved to be. A claim nobody checked never joins two sign-ins into one account.
-* Framework-neutral, as before: `Request` in, `Response` out.
+* Framework-neutral, as before: `Request` in, `Response` out ([values](../values.md) V6).
 
 ## Considered Options
+
+**Build or take**
+
+* **[Better Auth](https://better-auth.com/docs/plugins)** for TypeScript. It has magic links, passkeys, generic OAuth and Apple, sessions, an SQLite adapter, and an `mcp()` plugin that makes the app an OAuth server for MCP clients. But it exists only for TypeScript: Python would still be written by hand, and the two would differ in lifetimes, refusals, storage and revocation, which breaks V3. Its tables would hold the tokens as they are, where ours hold only HMACs.
+* **FastMCP's `OIDCProxy`** for Python. One external OIDC provider only; rejected for the form servers in ADR 0001.
+* **Build both, on small single-purpose libraries** (WebAuthn, SMTP), with shared test cases. (chosen)
 
 **Sending the magic link**
 
@@ -60,7 +67,7 @@ How does the package grow into the whole sign-in of an app, and what does it own
 
 ## Decision Outcome
 
-The package becomes the whole sign-in of a TypeScript app. It ships as `ts-v0.2.0`; the options change, which 0.x allows.
+Both packages become the whole sign-in of an app, with the same features (V3). They ship together as `ts-v0.2.0` and `v0.3.0`; the options change, which 0.x allows. Names below are the TypeScript ones; Python uses the same in snake_case.
 
 ### Sign-in methods
 
@@ -73,7 +80,7 @@ Every method ends in one app callback, `grant(identity, context)`, which returns
 
 ### Who a person is
 
-`identifyBy: "email" | "subject"`, default `"email"`.
+The app chooses how a person is identified, with the option `identifyBy: "email" | "subject"`. When it sets nothing, it is `"email"`.
 
 * With `"email"`, `identity.key` is the lowercased address. A magic link proves it. An OIDC provider counts only when its id_token says `email_verified: true` **and** the provider is trusted for email (`trustEmail`, default `true`). Set it to `false` for a provider whose users can set any address.
 * When the email doesn't count, the key is the issuer plus `sub`. That also applies to Apple's private relay addresses, which match nothing.
@@ -98,7 +105,7 @@ Every method ends in one app callback, `grant(identity, context)`, which returns
 
 ### Passkeys
 
-* Built on `@simplewebauthn/server`. The relying party is the host of `baseUrl`. User verification is required.
+* Built on `@simplewebauthn/server` in TypeScript and `webauthn` (py_webauthn) in Python. These verify passkeys only; everything else here is ours. The relying party is the host of `baseUrl`. User verification is required.
 * Credentials are discoverable, so signing in needs no username, and the browser can offer the passkey in the email field.
 * A passkey is added only in a signed-in browser session. The first sign-in is always another method, usually a magic link.
 * Passkeys are kept in the store without an expiry, under the person's subject. The app lists and deletes them through `passkeys(subject)` and `deletePasskey(subject, id)`.
@@ -117,18 +124,22 @@ Every method ends in one app callback, `grant(identity, context)`, which returns
 
 ### Pages and mail text
 
-* They come in English. A `copy` option replaces every string, so freundebuch can sign in in German.
+* The sign-in pages and the mail have text: "Sign in", "Check your mail", "Enter the code". The library ships it in English and German, and the app picks with `language: "en" | "de"` (default `"en"`). freundebuch, whose UI is German, sets `"de"`.
+* `texts` replaces single strings, for an app that wants other wording, for example `texts: { signInTitle: "Sign in to your quest log" }`. The README lists every key.
 
 ### Python
 
-* The Python package doesn't follow. Its servers sign in by passing a form to a service, and the grant carries that service's credentials. A magic link, passkey or OIDC sign-in can't produce those. The README says so.
+* The Python package gets every method and the browser session as well (V3). Its current servers keep their form, because their grant carries a service's credentials, which no other method produces; a new Python server can use the rest.
+* Passkeys use `webauthn`, SMTP the standard library's `smtplib`. Calls to OIDC providers verify TLS against the operating system's certificate store (`truststore`), as every HTTPS client of Marcel's does.
+* The behaviour is checked by the same test cases in both packages, as for the OAuth server today.
 
 ### Consequences
 
 * Good, because an app gets its whole sign-in from one place: MCP clients and its own pages, magic links, passkeys and any OIDC provider. A fix lands once.
 * Good, because the magic link can't be used to hand someone's account to a client they never started, yet still works across devices through the code.
 * Good, because the library reads no environment: each app keeps its own variable names and parses them itself.
-* Bad, because the package grows from an OAuth server into a sign-in system, with three new dependencies (`nodemailer`, `@simplewebauthn/server` and its browser half for the page).
+* Bad, because both packages grow from an OAuth server into a sign-in system, with new dependencies: `nodemailer` and `@simplewebauthn/server` (and its browser half for the page) in TypeScript, `webauthn` in Python.
+* Bad, because we write and maintain what Better Auth would give TypeScript for free, so that Python gets the same.
 * Bad, because the email as the default identity trusts each provider's `email_verified`. A provider that sets it carelessly must be marked `trustEmail: false`, or an address there takes over the account of that address.
 * Bad, because the options change: apps on 0.1 move `login` into `methods` when they update.
-* Bad, because the TypeScript and Python packages now differ in what they can do, not only in language; the README names which features are TypeScript only.
+* Bad, because every feature is written twice, once per language, and a release waits for both.
