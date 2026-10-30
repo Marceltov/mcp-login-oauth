@@ -19,11 +19,10 @@ The library provides:
   5 failures or 10 minutes;
 - optional static header tokens next to OAuth.
 
-What this library stands for is in [docs/values.md](docs/values.md), where it is going in
-[docs/roadmap.md](docs/roadmap.md), both also on the [documentation site](https://marceltov.github.io/mcp-login-oauth/).
+What this library [stands for](https://mcp-login-oauth.marceltov.de/values/) and [where it is going](https://mcp-login-oauth.marceltov.de/roadmap/) are on the [documentation site](https://mcp-login-oauth.marceltov.de/).
 
 **TypeScript?** This library is Python only; TypeScript apps sign in with Better Auth, see
-[TypeScript: use Better Auth](https://marceltov.github.io/mcp-login-oauth/typescript/).
+[Coming from TypeScript](https://mcp-login-oauth.marceltov.de/typescript/).
 
 Used by [trilium-mcp](https://github.com/Marceltov/trilium-mcp),
 [invoiceninja-mcp](https://github.com/Marceltov/invoiceninja-mcp),
@@ -40,10 +39,10 @@ uv add mcp-login-oauth
 
 Needs Python ≥ 3.12 and FastMCP ≥ 4.1.3.
 
-**Documentation:** [marceltov.github.io/mcp-login-oauth](https://marceltov.github.io/mcp-login-oauth/): [getting started](https://marceltov.github.io/mcp-login-oauth/getting-started/), the [reference](https://marceltov.github.io/mcp-login-oauth/reference/), [behaviour](https://marceltov.github.io/mcp-login-oauth/behaviour/), [development](https://marceltov.github.io/mcp-login-oauth/development/) and the design decisions.
+**Documentation:** [mcp-login-oauth.marceltov.de](https://mcp-login-oauth.marceltov.de/): [getting started](https://mcp-login-oauth.marceltov.de/getting-started/), the [reference](https://mcp-login-oauth.marceltov.de/reference/), [behaviour](https://mcp-login-oauth.marceltov.de/behaviour/), [development](https://mcp-login-oauth.marceltov.de/development/) and the design decisions.
 
 ## License
 
 Copyright © 2026 Marcel Bruckner.
 
-Licensed under the [GNU Affero General Public License v3.0 or later](LICENSE) (AGPL-3.0-or-later). You may use, modify, and redistribute it, but any modified version — **including one you run as a network service** — must be released under the same license with its source made available to its users, and the original copyright notice preserved. See [LICENSE](LICENSE) for the full terms.
+Licensed under the [GNU Affero General Public License v3.0 or later](https://github.com/Marceltov/mcp-login-oauth/blob/main/LICENSE) (AGPL-3.0-or-later). You may use, modify, and redistribute it, but any modified version — **including one you run as a network service** — must be released under the same license with its source made available to its users, and the original copyright notice preserved. See [LICENSE](https://github.com/Marceltov/mcp-login-oauth/blob/main/LICENSE) for the full terms.

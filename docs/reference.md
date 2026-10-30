@@ -1,4 +1,4 @@
-# Reference
+# Python API
 
 ```python
 from mcp_login_oauth import (BearerPrefixMiddleware, LoginClient, LoginField, LoginOAuthProvider,
@@ -19,7 +19,7 @@ The FastMCP auth provider: pass it as `FastMCP(..., auth=...)`.
 | `token_prefix` | Prefix of every code and token this server issues, e.g. `"tmcp_"`. |
 | `on_revoke` | Optional clean-up when a client revokes (below). |
 | `verify_static` | Optional: accept header tokens that aren't OAuth tokens (below). |
-| `pending_ttl`, `code_ttl`, `access_ttl`, `refresh_ttl`, `failed_login_delay`, `max_login_attempts` | Lifetimes and limits; defaults on [Behaviour](behaviour.md#lifetimes-and-limits). |
+| `pending_ttl`, `code_ttl`, `access_ttl`, `refresh_ttl`, `failed_login_delay`, `max_login_attempts` | Lifetimes and limits; defaults on [Lifetimes, flow and limits](behaviour.md#lifetimes-and-limits). |
 
 Tools read the grant from the access token: `get_access_token().claims["grant"]`.
 

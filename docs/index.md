@@ -16,7 +16,7 @@ hide:
 </div>
 
 !!! tip "Building in TypeScript?"
-    This library is Python only. TypeScript apps, with or without an MCP endpoint, sign in with Better Auth: see [TypeScript: use Better Auth](typescript.md).
+    This library is Python only. TypeScript apps, with or without an MCP endpoint, sign in with Better Auth: see [Coming from TypeScript](typescript.md).
 
 ## How it works
 
@@ -44,7 +44,7 @@ Your code supplies the login fields and the check that turns a submitted form in
 - the login page and honest dead-end pages for broken flows;
 - protection against password guessing.
 
-Every lifetime and refusal is on [Behaviour](behaviour.md).
+Every lifetime and refusal is on [Lifetimes, flow and limits](behaviour.md).
 
 ## Used by
 
