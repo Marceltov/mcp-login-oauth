@@ -1,23 +1,8 @@
 # Development
 
-Both packages live in this repository: Python at the root, TypeScript in `typescript/`. They keep the same features and behaviour ([V3](values.md#v3-the-same-in-python-and-typescript)), so a change to one names the other in its pull request.
-
-## Python
-
 ```bash
 uv sync
 uv run pytest -q
-```
-
-## TypeScript
-
-In `typescript/`:
-
-```bash
-npm ci
-npm test
-npm run typecheck
-npm pack          # builds dist/ and the tarball
 ```
 
 ## Documentation
@@ -32,5 +17,8 @@ CI builds it with `--strict`, which fails on broken internal links.
 
 ## Releases
 
-- **Python:** a tag `vX.Y.Z` on `main`; servers pin the tag.
-- **TypeScript:** a tag `ts-vX.Y.Z` on `main`. The release workflow packs the package and attaches the tarball to the GitHub release; the tag must match `typescript/package.json`.
+1. Set `version` in `pyproject.toml` in the pull request that changes what ships.
+2. After it is merged, tag `main`: `git tag -a vX.Y.Z -m "vX.Y.Z" && git push origin vX.Y.Z`.
+3. The release workflow (`.github/workflows/release.yml`) checks that the tag matches `pyproject.toml`, runs the tests, builds with `uv build`, publishes to [PyPI](https://pypi.org/project/mcp-login-oauth/) through Trusted Publishing (no API token) and attaches the files to the GitHub release.
+
+The PyPI side is set up once: a trusted publisher for `Marceltov/mcp-login-oauth`, workflow `release.yml`, environment `pypi`.

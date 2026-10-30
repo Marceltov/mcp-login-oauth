@@ -19,16 +19,11 @@ The library provides:
   5 failures or 10 minutes;
 - optional static header tokens next to OAuth.
 
-A TypeScript package with the same behaviour, for MCP servers outside Python (and with an OpenID Connect
-sign-in next to the form), lives in [`typescript/`](typescript/README.md).
-
-**Building a TypeScript app with a web UI and its own users?** Use [Better Auth](https://better-auth.com)
-instead: it has the sessions, magic links, passkeys, sign-in providers and an OAuth server for MCP clients
-(`@better-auth/mcp`) that this library deliberately doesn't ([ADR 0004](docs/adr/0004-web-apps-sign-in-with-better-auth.md)).
-This library is for MCP servers whose login is a form checked by the service behind them.
-
 What this library stands for is in [docs/values.md](docs/values.md), where it is going in
 [docs/roadmap.md](docs/roadmap.md), both also on the [documentation site](https://marceltov.github.io/mcp-login-oauth/).
+
+**TypeScript?** This library is Python only; TypeScript apps sign in with Better Auth, see
+[TypeScript: use Better Auth](https://marceltov.github.io/mcp-login-oauth/typescript/).
 
 Used by [trilium-mcp](https://github.com/Marceltov/trilium-mcp),
 [invoiceninja-mcp](https://github.com/Marceltov/invoiceninja-mcp),
@@ -37,15 +32,15 @@ Used by [trilium-mcp](https://github.com/Marceltov/trilium-mcp),
 
 ## Install
 
-Pinned by git tag until there is a PyPI release:
+From PyPI:
 
 ```bash
-uv add "mcp-login-oauth @ git+https://github.com/Marceltov/mcp-login-oauth@v0.2.0"
+uv add mcp-login-oauth
 ```
 
 Needs Python ≥ 3.12 and FastMCP ≥ 4.1.3.
 
-**Documentation:** [marceltov.github.io/mcp-login-oauth](https://marceltov.github.io/mcp-login-oauth/): getting started in [Python](https://marceltov.github.io/mcp-login-oauth/getting-started/python/) and [TypeScript](https://marceltov.github.io/mcp-login-oauth/getting-started/typescript/), the [reference](https://marceltov.github.io/mcp-login-oauth/reference/behaviour/), [development](https://marceltov.github.io/mcp-login-oauth/development/) and the design decisions.
+**Documentation:** [marceltov.github.io/mcp-login-oauth](https://marceltov.github.io/mcp-login-oauth/): [getting started](https://marceltov.github.io/mcp-login-oauth/getting-started/), the [reference](https://marceltov.github.io/mcp-login-oauth/reference/), [behaviour](https://marceltov.github.io/mcp-login-oauth/behaviour/), [development](https://marceltov.github.io/mcp-login-oauth/development/) and the design decisions.
 
 ## License
 

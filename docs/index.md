@@ -8,22 +8,15 @@ hide:
 
 # Sign-in for MCP servers behind a login form
 
-<p class="ml-hero__lead">claude.ai and the Claude apps sign in once through your server's own login (a Trilium password, a Paperless login) and then only hold OAuth tokens. Your server turns each login into a grant and reads it back on every request.</p>
+<p class="ml-hero__lead">For FastMCP servers in front of another service. claude.ai and the Claude apps sign in once through your server's own login (a Trilium password, a Paperless login) and then only hold OAuth tokens. Your server turns each login into a grant and reads it back on every request.</p>
 
-[Start in Python](getting-started/python.md){ .md-button .md-button--primary }
-[Start in TypeScript](getting-started/typescript.md){ .md-button }
+[Get started](getting-started.md){ .md-button .md-button--primary }
+[Reference](reference.md){ .md-button }
 
 </div>
 
-## Is this the right library?
-
-| You are building … | Use |
-|---|---|
-| An MCP server in front of another service, where people sign in with that service's own login | **mcp-login-oauth** |
-| An MCP server without its own users, where people sign in at one OpenID Connect provider (TypeScript) | **mcp-login-oauth**, with an `oidc` login |
-| An app with a web UI and its own users (accounts, sessions, magic links, passkeys, several providers), with or without an MCP endpoint | **[Better Auth](https://better-auth.com)**, with `@better-auth/mcp` for MCP clients |
-
-This library deliberately holds no user accounts or sessions ([V7](values.md#v7-a-login-library-not-an-account-system), [ADR 0004](adr/0004-web-apps-sign-in-with-better-auth.md)).
+!!! tip "Building in TypeScript?"
+    This library is Python only. TypeScript apps, with or without an MCP endpoint, sign in with Better Auth: see [TypeScript: use Better Auth](typescript.md).
 
 ## How it works
 
@@ -51,7 +44,7 @@ Your code supplies the login fields and the check that turns a submitted form in
 - the login page and honest dead-end pages for broken flows;
 - protection against password guessing.
 
-What both packages do in detail, with every lifetime and refusal, is on [Behaviour](reference/behaviour.md).
+Every lifetime and refusal is on [Behaviour](behaviour.md).
 
 ## Used by
 

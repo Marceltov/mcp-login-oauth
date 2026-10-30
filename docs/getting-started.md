@@ -1,16 +1,14 @@
-# Getting started: Python
+# Getting started
 
 A FastMCP server in front of Trilium Notes, where people sign in with their Trilium password.
 
 ## Install
 
-Pinned by git tag until there is a PyPI release:
-
 ```bash
-uv add "mcp-login-oauth @ git+https://github.com/Marceltov/mcp-login-oauth@v0.2.0"
+uv add mcp-login-oauth
 ```
 
-Needs Python ≥ 3.12 and FastMCP ≥ 4.1.3.
+Needs Python ≥ 3.12 and FastMCP ≥ 4.1.3. The package is on [PyPI](https://pypi.org/project/mcp-login-oauth/); pin a version range in production, as for any dependency.
 
 ## A server with a password login
 
@@ -57,5 +55,5 @@ What happens:
 
 ## Next
 
-- Every argument, the callbacks, the login fields and the defaults: [Python reference](../reference/python.md).
-- Lifetimes, refusals and what is stored: [Behaviour](../reference/behaviour.md).
+- Every argument, the callbacks, the login fields and the defaults: [Reference](reference.md).
+- Lifetimes, refusals and what is stored: [Behaviour](behaviour.md).

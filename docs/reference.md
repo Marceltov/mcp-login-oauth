@@ -1,4 +1,4 @@
-# Python reference
+# Reference
 
 ```python
 from mcp_login_oauth import (BearerPrefixMiddleware, LoginClient, LoginField, LoginOAuthProvider,
@@ -31,7 +31,7 @@ Tools read the grant from the access token: `get_access_token().claims["grant"]`
 | `on_revoke` | `async (grant: dict) -> None` | Clean up when a client revokes, for example log out a minted token. Failures are logged; the revocation still happens. |
 | `verify_static` | `async (token: str) -> dict \| None` | Accept a header token that isn't an OAuth token (a raw service token, a static password); the returned dict is the grant. Tokens starting with `token_prefix` never reach it. |
 
-`LoginClient` carries `client_id`, `client_name` (what the client registered as, falling back to the id) and `redirect_uri`. Use it to label a credential minted per client, for example an InvoiceNinja API token named `MCP: claude.ai`. The name is chosen by the client, so it is a label, not proof of identity ([ADR 0002](../adr/0002-check-login-learns-the-client.md)).
+`LoginClient` carries `client_id`, `client_name` (what the client registered as, falling back to the id) and `redirect_uri`. Use it to label a credential minted per client, for example an InvoiceNinja API token named `MCP: claude.ai`. The name is chosen by the client, so it is a label, not proof of identity ([ADR 0002](adr/0002-check-login-learns-the-client.md)).
 
 ## `LoginField`
 
