@@ -1,6 +1,6 @@
 [project]
 name = "mcp-login-oauth"
-version = "0.2.1"
+version = "0.2.2"
 description = "OAuth 2.1 browser login for FastMCP servers whose login is a form checked by the service behind them"
 readme = "README.md"
 license = "AGPL-3.0-or-later"

@@ -19,8 +19,7 @@ The library provides:
   5 failures or 10 minutes;
 - optional static header tokens next to OAuth.
 
-What this library stands for is in [docs/values.md](docs/values.md), where it is going in
-[docs/roadmap.md](docs/roadmap.md), both also on the [documentation site](https://marceltov.github.io/mcp-login-oauth/).
+What this library [stands for](https://marceltov.github.io/mcp-login-oauth/values/) and [where it is going](https://marceltov.github.io/mcp-login-oauth/roadmap/) are on the [documentation site](https://marceltov.github.io/mcp-login-oauth/).
 
 **TypeScript?** This library is Python only; TypeScript apps sign in with Better Auth, see
 [Coming from TypeScript](https://marceltov.github.io/mcp-login-oauth/typescript/).
@@ -46,4 +45,4 @@ Needs Python ≥ 3.12 and FastMCP ≥ 4.1.3.
 
 Copyright © 2026 Marcel Bruckner.
 
-Licensed under the [GNU Affero General Public License v3.0 or later](LICENSE) (AGPL-3.0-or-later). You may use, modify, and redistribute it, but any modified version — **including one you run as a network service** — must be released under the same license with its source made available to its users, and the original copyright notice preserved. See [LICENSE](LICENSE) for the full terms.
+Licensed under the [GNU Affero General Public License v3.0 or later](https://github.com/Marceltov/mcp-login-oauth/blob/main/LICENSE) (AGPL-3.0-or-later). You may use, modify, and redistribute it, but any modified version — **including one you run as a network service** — must be released under the same license with its source made available to its users, and the original copyright notice preserved. See [LICENSE](https://github.com/Marceltov/mcp-login-oauth/blob/main/LICENSE) for the full terms.
