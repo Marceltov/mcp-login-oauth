@@ -19,6 +19,9 @@ The library provides:
   5 failures or 10 minutes;
 - optional static header tokens next to OAuth.
 
+A TypeScript package with the same behaviour, for MCP servers outside Python (and with an OpenID Connect
+sign-in next to the form), lives in [`typescript/`](typescript/README.md).
+
 Used by [trilium-mcp](https://github.com/Marceltov/trilium-mcp),
 [invoiceninja-mcp](https://github.com/Marceltov/invoiceninja-mcp),
 [paperless-ngx-mcp](https://github.com/Marceltov/paperless-ngx-mcp) and the recall engine in
