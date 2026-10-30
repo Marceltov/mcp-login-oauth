@@ -217,6 +217,11 @@
   border-radius: 50%;
   background: var(--md-default-bg-color);
 }
+.ml-now .ml-tl-dot {
+  border-width: 3px;
+  border-color: var(--ml-hover);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--ml-accent) 22%, transparent);
+}
 .ml-later .ml-tl-dot {
   border-color: var(--md-default-fg-color--lighter);
 }

@@ -8,7 +8,7 @@ mcp-login-oauth: the OAuth server for MCP clients of FastMCP servers whose login
 
 - `uv sync`, `uv run pytest -q`, `uv build`
 - Release: set `version` in `pyproject.toml`, then push a tag `vX.Y.Z` on `main`; CI publishes to PyPI (Trusted Publishing) and makes the GitHub release.
-- Docs: `uvx --with mkdocs-material==9.7.7 --with 'mkdocs<2' mkdocs serve` (`build --strict` in CI); published to GitHub Pages from `main`. The README stays short and links to the docs site; usage lives in `docs/`. The roadmap is `docs/roadmap.yml`, rendered by `docs_hooks/roadmap.py`.
+- Docs: `uvx --with mkdocs-material==9.7.7 --with 'mkdocs<2' mkdocs serve` (`build --strict` in CI); published to GitHub Pages from `main`. The README stays short and links to the docs site; usage lives in `docs/`. The roadmap is data: `docs/roadmap.yml`, rendered as a timeline by `docs_hooks/roadmap.py`. The pull request that finishes or changes a step updates it (`status: done`, a `date`, the PR link).
 
 ## Rules
 
