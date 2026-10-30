@@ -47,12 +47,13 @@ Better Auth has no pages of its own: the app builds the sign-in and consent page
 ```
 browser ──cookie──▶ Next.js + Better Auth ──Bearer JWT──▶ Python backend (optional)
 claude.ai ──OAuth──▶ Next.js (mcp plugin) … then Bearer token ──▶ the MCP endpoint
-script ──OAuth──▶ Next.js … then Bearer token ──▶ the API
+script ──OAuth or API key──▶ Next.js … then Bearer token ──▶ the API
 ```
 
 * **The web UI** uses a backend-for-frontend: the browser holds only Better Auth's `HttpOnly` session cookie and talks only to Next.js. With a Python backend, a Next.js route forwards the request with a short-lived JWT for the signed-in user (the `jwt` plugin, 15 minutes by default). No token reaches the browser, and there is no CORS.
 * **MCP clients** sign in through OAuth at Next.js: the `@better-auth/mcp` plugin on `@better-auth/oauth-provider`. Their tokens are bound to the MCP resource (RFC 8707), refresh tokens rotate, tokens can be revoked and introspected, and Client ID Metadata Documents come with `@better-auth/cimd`. Dynamic client registration stays off unless the app turns it on. The MCP endpoint can live in Next.js or in Python.
 * **Scripts** sign in like MCP clients: once through OAuth with PKCE in a browser, then they keep the rotating refresh token. Their tokens are bound to the API, not to `/mcp`. Not the device flow (`device-authorization`): it hands the script a Better Auth session token, which is stored in plain text and works as a bearer token through the `bearer` plugin, so a copy of the database would be enough to act as the script. Neither plugin is used.
+* **Headless scripts**, on a server without a browser, use API keys (the `api-key` plugin), added when the first such script exists. The person creates a key in the app's settings; the script sends it as `x-api-key`. Keys are stored hashed and can expire and be revoked. With a Python backend, the Next.js route checks the key and forwards the request with a short-lived JWT, as for the web UI.
 
 ### What a backend checks
 
@@ -89,5 +90,5 @@ Configurable per app, with the verified email as the default. Better Auth links 
 * Bad, because each app builds its sign-in and consent pages itself.
 * Bad, because a backend's JWT stays valid until it expires; short lifetimes and introspection keep that small.
 * Bad, because some of Better Auth's defaults are weaker than our lines: magic links and codes are stored in plain text, and so are session tokens. Each app sets hashing where it can, and leaves out the `bearer` plugin, so that a session token from the database is useless without the app's secret, which signs the cookie. questlog's ADR names the settings.
-* Bad, because a script on a server without a browser can't sign in on its own; it is signed in once on a machine with one, and its refresh token is copied over.
+* Bad, because a headless script needs an API key, a long-lived secret on that server; it can expire and be revoked, but until then it works wherever it is copied.
 * Bad, because freundebuch and notefeed lose their current logins when they move: connected clients sign in once more.
