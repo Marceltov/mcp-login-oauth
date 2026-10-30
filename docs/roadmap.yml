@@ -1,6 +1,6 @@
 # The roadmap, as data. docs_hooks/roadmap.py (from passageway) renders it as the timeline on the roadmap page.
 #
-# Open entries (status next, later or decide) are shown first, in the order of this file, each with a `when` label and `details`.
+# Open entries (status now, next, later or decide) are shown first, in the order of this file, each with a `when` label and `details`.
 # Done entries are shown below them, newest date first (the order of this file breaks ties), each with a `date` and a link to its
 # pull request or release.
 #
