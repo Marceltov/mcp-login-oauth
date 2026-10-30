@@ -121,5 +121,5 @@ For an MCP endpoint in Python, FastMCP's `JWTVerifier` with the same keys, issue
 
 ## More
 
-- [Sign-in](https://marceltov.github.io/engineering-conventions/architecture/sign-in/) and [Better Auth](https://marceltov.github.io/engineering-conventions/stacks/better-auth/) in Marcel's engineering conventions.
+- [Sign-in](https://engineering-conventions.marceltov.de/architecture/sign-in/) and [Better Auth](https://engineering-conventions.marceltov.de/stacks/better-auth/) in Marcel's engineering conventions.
 - questlog's [ADR 0004](https://github.com/Marceltov/questlog/blob/main/docs/adr/0004-sign-in-with-better-auth.md): a full setup, with every setting and why.
