@@ -45,7 +45,7 @@ uv add "mcp-login-oauth @ git+https://github.com/Marceltov/mcp-login-oauth@v0.2.
 
 Needs Python ≥ 3.12 and FastMCP ≥ 4.1.3.
 
-**Documentation:** [marceltov.github.io/mcp-login-oauth](https://marceltov.github.io/mcp-login-oauth/): the [Python package](https://marceltov.github.io/mcp-login-oauth/python/) with callbacks, login fields and defaults, the [TypeScript package](https://marceltov.github.io/mcp-login-oauth/typescript/), [development](https://marceltov.github.io/mcp-login-oauth/development/) and the design decisions.
+**Documentation:** [marceltov.github.io/mcp-login-oauth](https://marceltov.github.io/mcp-login-oauth/): getting started in [Python](https://marceltov.github.io/mcp-login-oauth/getting-started/python/) and [TypeScript](https://marceltov.github.io/mcp-login-oauth/getting-started/typescript/), the [reference](https://marceltov.github.io/mcp-login-oauth/reference/behaviour/), [development](https://marceltov.github.io/mcp-login-oauth/development/) and the design decisions.
 
 ## License
 

@@ -6,6 +6,9 @@ decision-makers: Marcel Bruckner
 
 # A TypeScript package next to the Python one, with an OIDC login and an SQLite store
 
+!!! note "Later"
+    The apps this package was first meant for (questlog, freundebuch, notefeed) sign in with Better Auth instead, and this package stays the OAuth server for form-login MCP servers: see [ADR 0004](0004-web-apps-sign-in-with-better-auth.md).
+
 ## Context and Problem Statement
 
 Marcel's TypeScript apps (notefeed, freundebuch, and the new questlog) each carry a hand-written copy of the same OAuth authorization server for MCP clients, the problem ADR 0001 solved for the Python servers. freundebuch's copy (its ADR 0003) lists the gaps that come from storing nothing: a used code or refresh token can be replayed once after a restart, a single client can't be revoked, and only rotating the secret signs anyone out. questlog decided to use a shared TypeScript library instead of a third copy (questlog ADR 0003). Where does it live, how does it differ from the Python package, and how is it installed?
