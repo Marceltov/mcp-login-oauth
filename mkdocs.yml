@@ -1,0 +1,62 @@
+site_name: mcp-login-oauth
+site_description: The OAuth server for MCP clients of servers whose login is a form checked by a service, or a sign-in at one OpenID Connect provider. Python and TypeScript.
+site_url: https://marceltov.github.io/mcp-login-oauth/
+repo_url: https://github.com/Marceltov/mcp-login-oauth
+repo_name: Marceltov/mcp-login-oauth
+edit_uri: edit/main/docs/
+copyright: Copyright &copy; 2026 Marcel Bruckner. Licensed under <a href="https://github.com/Marceltov/mcp-login-oauth/blob/main/LICENSE">AGPL-3.0-or-later</a>
+
+nav:
+  - Home: index.md
+  - What mcp-login-oauth stands for: values.md
+  - Where mcp-login-oauth is going: roadmap.md
+  - Python package: python.md
+  - TypeScript package: typescript.md
+  - Development: development.md
+  - Design decisions:
+      - One library for all FastMCP servers: adr/0001-shared-login-oauth-library.md
+      - check_login learns the client: adr/0002-check-login-learns-the-client.md
+      - The TypeScript package: adr/0003-typescript-package.md
+      - Apps with a web UI use Better Auth: adr/0004-web-apps-sign-in-with-better-auth.md
+
+theme:
+  name: material
+  font:
+    text: Atkinson Hyperlegible Next
+    code: Atkinson Hyperlegible Mono
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: teal
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: teal
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.footer
+    - navigation.top
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.action.edit
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
