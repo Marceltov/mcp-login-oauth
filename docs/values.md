@@ -44,7 +44,7 @@ The OAuth server follows the published standards (OAuth 2.1, RFC 8414, 9728, 759
 
 ### V5. Inside your app, on your server
 
-The library runs in the app's own process and keeps its data in its own SQLite file next to the app's database. It needs no other service and calls nothing but the providers and the mail server the app configured. Losing that file only makes clients sign in again.
+The library runs in the app's own process and keeps its data in its own SQLite file next to the app's database. It needs no other service and calls nothing but the service or OIDC provider the app configured. Losing that file only makes clients sign in again.
 
 **Rules out:** a hosted sign-in service; telemetry; tables in the app's database.
 
