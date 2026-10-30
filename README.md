@@ -32,10 +32,10 @@ Used by [trilium-mcp](https://github.com/Marceltov/trilium-mcp),
 
 ## Install
 
-Pinned by git tag until there is a PyPI release:
+From PyPI:
 
 ```bash
-uv add "mcp-login-oauth @ git+https://github.com/Marceltov/mcp-login-oauth@v0.2.0"
+uv add mcp-login-oauth
 ```
 
 Needs Python ≥ 3.12 and FastMCP ≥ 4.1.3.

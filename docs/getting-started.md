@@ -4,13 +4,11 @@ A FastMCP server in front of Trilium Notes, where people sign in with their Tril
 
 ## Install
 
-Pinned by git tag until there is a PyPI release:
-
 ```bash
-uv add "mcp-login-oauth @ git+https://github.com/Marceltov/mcp-login-oauth@v0.2.0"
+uv add mcp-login-oauth
 ```
 
-Needs Python ≥ 3.12 and FastMCP ≥ 4.1.3.
+Needs Python ≥ 3.12 and FastMCP ≥ 4.1.3. The package is on [PyPI](https://pypi.org/project/mcp-login-oauth/); pin a version range in production, as for any dependency.
 
 ## A server with a password login
 

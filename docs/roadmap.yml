@@ -10,6 +10,17 @@
 
 items:
   # ---- open ------------------------------------------------------------------------------------------------------------
+  - id: pypi
+    status: next
+    when: Now
+    icon: package-variant-closed
+    title: On PyPI
+    summary: "Publish the package as `mcp-login-oauth`, so that servers `uv add` it instead of pinning a git tag."
+    links:
+      - {label: "#11", url: "https://github.com/Marceltov/mcp-login-oauth/issues/11"}
+    details: |
+      A release workflow on `v*` tags publishes through PyPI Trusted Publishing, with no API token. The first release is `v0.2.1`, the same code as v0.2.0 with the package metadata.
+
   - id: client-id-metadata
     status: next
     when: Next
