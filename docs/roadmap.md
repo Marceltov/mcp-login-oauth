@@ -5,13 +5,13 @@ hide:
 
 # Where mcp-login-oauth is going
 
-What is planned and what has shipped, from one library for four FastMCP servers to the same OAuth server in Python and TypeScript. Each step serves a [value](values.md) and has its issue or pull request.
+What is planned and what has shipped, from four copies of the same OAuth code to one library for FastMCP servers. Each step serves a [value](values.md) and has its issue or pull request.
 
 <!-- roadmap -->
 
 ## The idea behind all of it
 
-One small, strict OAuth server for MCP clients, the same in Python and TypeScript, that holds nothing usable at rest and leaves accounts and sign-in methods to the app.
+One small, strict OAuth server for MCP clients of FastMCP servers, that holds nothing usable at rest and leaves the login itself to the server.
 
 ## Parked
 
@@ -19,7 +19,7 @@ Nothing yet.
 
 ## Decided against
 
-A complete sign-in for apps with a web UI: magic links, passkeys, several sign-in providers, browser sessions and user accounts, in both packages. Better Auth already does this well for TypeScript, where every UI lives, and Python backends only need to check its tokens ([ADR 0004](adr/0004-web-apps-sign-in-with-better-auth.md), [V7](values.md#v7-a-login-library-not-an-account-system)).
+Nothing yet.
 
 ## Keep it true
 

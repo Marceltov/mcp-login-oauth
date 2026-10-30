@@ -10,43 +10,17 @@
 
 items:
   # ---- open ------------------------------------------------------------------------------------------------------------
-  - id: typescript-release
-    status: next
-    when: Now
-    icon: package-variant-closed
-    title: First TypeScript release
-    summary: Tag `ts-v0.1.0`, so that TypeScript servers install the package from its release tarball.
-    links:
-      - {label: "#5", url: "https://github.com/Marceltov/mcp-login-oauth/issues/5"}
-      - {label: "V3", url: "https://marceltov.github.io/mcp-login-oauth/values/#v3-the-same-in-python-and-typescript"}
-    details: |
-      The release workflow is on `main`; the tag has to be pushed from a machine that may push tags:
-      - `git tag -a ts-v0.1.0 origin/main -m "TypeScript v0.1.0"`
-      - `git push origin ts-v0.1.0`
-
   - id: client-id-metadata
     status: next
     when: Next
     icon: card-account-details-outline
     title: Client ID Metadata Documents
-    summary: Accept clients that identify themselves by a metadata URL, which the MCP spec now prefers over dynamic registration, in both packages.
+    summary: Accept clients that identify themselves by a metadata URL, which the MCP spec now prefers over dynamic registration.
     links:
       - {label: "#6", url: "https://github.com/Marceltov/mcp-login-oauth/issues/6"}
-      - {label: "V4", url: "https://marceltov.github.io/mcp-login-oauth/values/#v4-standards-any-client-speaks"}
+      - {label: "V3", url: "https://marceltov.github.io/mcp-login-oauth/values/#v3-standards-any-client-speaks"}
     details: |
       Fetch and validate the document (HTTPS only, size and time limits), take its `redirect_uris`, cache it within limits, and advertise support in the metadata. Dynamic registration stays.
-
-  - id: shared-test-cases
-    status: later
-    when: Later
-    icon: test-tube
-    title: Shared test cases
-    summary: One language-neutral set of flows, run against both packages, so that they can't drift apart unnoticed.
-    links:
-      - {label: "#7", url: "https://github.com/Marceltov/mcp-login-oauth/issues/7"}
-      - {label: "V3", url: "https://marceltov.github.io/mcp-login-oauth/values/#v3-the-same-in-python-and-typescript"}
-    details: |
-      Start with what matters most: a code spent once also after a restart, refresh rotation, revocation by a public client, resource binding, and the login link's 5 failures and 10 minutes.
 
   # ---- done, newest first ----------------------------------------------------------------------------------------------
   - id: docs-site
@@ -54,29 +28,9 @@ items:
     date: 2026-10-30
     icon: book-open-variant
     title: Documentation site
-    summary: Getting started and reference for both packages, one page for their shared behaviour, diagrams, and a design of its own.
+    summary: Getting started, reference, behaviour, values and this roadmap, with diagrams and a design of its own.
     links:
       - {label: "PR #8", url: "https://github.com/Marceltov/mcp-login-oauth/pull/8"}
-
-  - id: better-auth-decision
-    status: done
-    date: 2026-10-30
-    icon: source-branch
-    title: Apps with a web UI use Better Auth
-    summary: This library stays the OAuth server for form-login MCP servers; values and roadmap written down.
-    links:
-      - {label: "ADR 0004", url: "https://marceltov.github.io/mcp-login-oauth/adr/0004-web-apps-sign-in-with-better-auth/"}
-      - {label: "PR #4", url: "https://github.com/Marceltov/mcp-login-oauth/pull/4"}
-
-  - id: typescript-package
-    status: done
-    date: 2026-10-30
-    icon: language-typescript
-    title: TypeScript package
-    summary: The same OAuth server for Node.js, framework-neutral, with a form or one OIDC provider and an encrypted SQLite store.
-    links:
-      - {label: "ADR 0003", url: "https://marceltov.github.io/mcp-login-oauth/adr/0003-typescript-package/"}
-      - {label: "PR #3", url: "https://github.com/Marceltov/mcp-login-oauth/pull/3"}
 
   - id: server-gaps
     status: done

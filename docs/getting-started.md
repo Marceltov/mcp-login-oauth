@@ -1,4 +1,4 @@
-# Getting started: Python
+# Getting started
 
 A FastMCP server in front of Trilium Notes, where people sign in with their Trilium password.
 
@@ -57,5 +57,5 @@ What happens:
 
 ## Next
 
-- Every argument, the callbacks, the login fields and the defaults: [Python reference](../reference/python.md).
-- Lifetimes, refusals and what is stored: [Behaviour](../reference/behaviour.md).
+- Every argument, the callbacks, the login fields and the defaults: [Reference](reference.md).
+- Lifetimes, refusals and what is stored: [Behaviour](behaviour.md).
