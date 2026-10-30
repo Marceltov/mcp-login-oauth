@@ -2,6 +2,8 @@
 
 OAuth 2.1 authorization server for MCP servers that clients such as claude.ai, the Claude desktop and mobile apps connect to. The client logs in once in the browser and then only holds opaque OAuth tokens. The login is either a **form** your app checks (a password, a service login) or a **sign-in at an OpenID Connect provider** such as authentik. Your app turns each login into a *grant*, for example the user's id, and reads it back on every MCP request.
 
+**For a TypeScript app with a web UI and its own users, use [Better Auth](https://better-auth.com) instead** ([ADR 0004](../docs/adr/0004-web-apps-sign-in-with-better-auth.md)): this package is for MCP servers whose login is a form checked by a service, or a sign-in at one OIDC provider.
+
 The sibling of the Python package in the root of this repository, with the same behaviour ([ADR 0003](../docs/adr/0003-typescript-package.md)). Framework-neutral: it takes a web `Request` and returns a `Response`, so it mounts in Next.js route handlers or any server that speaks the Fetch API.
 
 The package provides:

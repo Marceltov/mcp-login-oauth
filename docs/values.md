@@ -60,6 +60,14 @@ The app supplies who may sign in and what a sign-in grants. Everything that woul
 
 **ADRs:** [0001](adr/0001-shared-login-oauth-library.md), [0002](adr/0002-check-login-learns-the-client.md), [0003](adr/0003-typescript-package.md), [0004](adr/0004-web-apps-sign-in-with-better-auth.md)
 
+### V7. A login library, not an account system
+
+This library signs MCP clients in to servers whose login is a form checked by a service, or a sign-in at one OIDC provider. It holds no user accounts and doesn't compete with full sign-in systems: an app with a web UI and its own users signs in with [Better Auth](https://better-auth.com), which does that well for TypeScript, and the README says so.
+
+**Rules out:** user accounts, browser sessions, magic links, passkeys or lists of sign-in providers in this library; rebuilding for TypeScript apps what Better Auth already offers; a TypeScript app with a web UI choosing this library over Better Auth.
+
+**ADRs:** [0004](adr/0004-web-apps-sign-in-with-better-auth.md)
+
 ## Changing this page
 
 Points keep their numbers, so that reviews and issues citing them stay right. A change needs the maintainer's approval and says why in its pull request. Weakening a line never crossed is a change to what the library is.

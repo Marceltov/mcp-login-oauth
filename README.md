@@ -22,6 +22,14 @@ The library provides:
 A TypeScript package with the same behaviour, for MCP servers outside Python (and with an OpenID Connect
 sign-in next to the form), lives in [`typescript/`](typescript/README.md).
 
+**Building a TypeScript app with a web UI and its own users?** Use [Better Auth](https://better-auth.com)
+instead: it has the sessions, magic links, passkeys, sign-in providers and an OAuth server for MCP clients
+(`@better-auth/mcp`) that this library deliberately doesn't ([ADR 0004](docs/adr/0004-web-apps-sign-in-with-better-auth.md)).
+This library is for MCP servers whose login is a form checked by the service behind them.
+
+What this library stands for is in [docs/values.md](docs/values.md), where it is going in
+[docs/roadmap.md](docs/roadmap.md).
+
 Used by [trilium-mcp](https://github.com/Marceltov/trilium-mcp),
 [invoiceninja-mcp](https://github.com/Marceltov/invoiceninja-mcp),
 [paperless-ngx-mcp](https://github.com/Marceltov/paperless-ngx-mcp) and the recall engine in
