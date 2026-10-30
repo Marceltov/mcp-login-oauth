@@ -155,3 +155,200 @@
 .md-typeset .tip > summary::before {
   background-color: var(--ml-brass);
 }
+
+/* ---- The roadmap timeline (docs/roadmap.yml, rendered by docs_hooks/roadmap.py; from passageway) ----------------------------------------
+   A label on the left (a date for what shipped), a line with a marker (hollow: planned, filled with a check: shipped) and a
+   card on the right. On narrow screens the label moves into the card and the line stays on the left. */
+.md-typeset .ml-center {
+  text-align: center;
+}
+.md-typeset .ml-lead {
+  max-width: 34em;
+  margin-inline: auto;
+  color: var(--md-default-fg-color--light);
+}
+
+.ml-timeline {
+  --ml-dot: 1.1rem;
+  --ml-when: 6.2rem;
+  --ml-gap: 0.9rem;
+  max-width: 46rem;
+  margin: 2.2rem auto 2.6rem;
+}
+.ml-tl-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--ml-when) var(--ml-dot) minmax(0, 1fr);
+  column-gap: var(--ml-gap);
+  padding-bottom: 0.6rem;
+}
+.ml-tl-row::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--ml-when) + var(--ml-gap) + var(--ml-dot) / 2 - 1px);
+  width: 2px;
+  background: var(--md-default-fg-color--lightest);
+}
+.ml-tl-row:first-child::before {
+  top: 1.25rem;
+}
+.ml-tl-row:last-child::before {
+  bottom: calc(100% - 1.25rem);
+}
+
+.ml-tl-when {
+  padding-top: 0.78rem;
+  text-align: right;
+  font-size: 0.72rem;
+  font-style: italic;
+  white-space: nowrap;
+  color: var(--md-default-fg-color--light);
+}
+.ml-tl-dot {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  width: var(--ml-dot);
+  height: var(--ml-dot);
+  margin-top: 0.7rem;
+  border: 2px solid var(--ml-brass);
+  border-radius: 50%;
+  background: var(--md-default-bg-color);
+}
+.ml-later .ml-tl-dot {
+  border-color: var(--md-default-fg-color--lighter);
+}
+.ml-decide .ml-tl-dot {
+  border-style: dashed;
+  border-color: var(--ml-steel);
+}
+.ml-done .ml-tl-dot {
+  background: var(--ml-brass);
+}
+.ml-done .ml-tl-dot::after {
+  content: "";
+  position: absolute;
+  left: 0.27rem;
+  top: 0.06rem;
+  width: 0.28rem;
+  height: 0.56rem;
+  border: solid var(--md-default-bg-color);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.ml-tl-card {
+  padding: 0.65rem 1rem 0.7rem;
+  border-radius: 0.6rem;
+  background: var(--ml-mist);
+}
+.ml-tl-head {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+.ml-ic {
+  display: inline-flex;
+  flex: none;
+  width: 1.05rem;
+  height: 1.05rem;
+  color: var(--ml-brass);
+}
+.ml-ic svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+.ml-later .ml-ic {
+  color: var(--md-default-fg-color--light);
+}
+.ml-decide .ml-ic {
+  color: var(--ml-steel);
+}
+.ml-tl-title {
+  flex: 1 1 auto;
+  font-weight: 600;
+}
+.ml-tl-links {
+  display: flex;
+  gap: 0.7rem;
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+.md-typeset .ml-tl-summary {
+  margin: 0.2rem 0 0;
+  font-size: 0.78rem;
+  color: var(--md-default-fg-color--light);
+}
+/* Material styles every <details> as an admonition (a box with an icon and a chevron); here it is a quiet "Details" toggle. */
+.md-typeset details.ml-tl-details {
+  margin: 0.45rem 0 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: none;
+  font-size: 0.76rem;
+}
+.md-typeset details.ml-tl-details > summary {
+  margin: 0;
+  padding: 0;
+  background: none;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--md-typeset-a-color);
+}
+.md-typeset details.ml-tl-details > summary::before {
+  content: none;
+}
+.md-typeset details.ml-tl-details > summary::after {
+  content: "\203A";
+  position: static;
+  display: inline-block;
+  width: auto;
+  height: auto;
+  margin-left: 0.35em;
+  background: none;
+  -webkit-mask-image: none;
+  mask-image: none;
+  color: inherit;
+  transition: transform 0.15s;
+}
+.md-typeset details.ml-tl-details[open] > summary::after {
+  transform: rotate(90deg);
+}
+.md-typeset .ml-tl-details p,
+.md-typeset .ml-tl-details ul {
+  margin: 0.4em 0;
+}
+
+@media screen and (max-width: 44.9375em) {
+  .ml-timeline {
+    --ml-when: 0rem;
+  }
+  .ml-tl-row {
+    grid-template-columns: var(--ml-dot) minmax(0, 1fr);
+    grid-template-areas: ". when" "dot card";
+  }
+  .ml-tl-row::before {
+    left: calc(var(--ml-dot) / 2 - 1px);
+  }
+  .ml-tl-when {
+    grid-area: when;
+    padding: 0.2rem 0 0.15rem;
+    text-align: left;
+    font-size: 0.68rem;
+  }
+  .ml-tl-dot {
+    grid-area: dot;
+    margin-top: 0.7rem;
+  }
+  .ml-tl-card {
+    grid-area: card;
+  }
+  .ml-tl-head {
+    flex-wrap: wrap;
+  }
+}
