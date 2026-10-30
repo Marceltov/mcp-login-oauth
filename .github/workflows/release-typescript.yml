@@ -1,0 +1,31 @@
+name: release-typescript
+# A tag ts-vX.Y.Z packs the TypeScript package and attaches the tarball to a GitHub release:
+# npm can't install from a folder of a git repository, so apps pin this tarball's URL (ADR 0003).
+on:
+  push:
+    tags: ["ts-v*"]
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: typescript
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: typescript/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - name: Check the tag matches package.json
+        run: test "ts-v$(node -p 'require("./package.json").version')" = "$GITHUB_REF_NAME"
+      - run: npm pack
+      - name: Create the release with the tarball
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" ./*.tgz --title "TypeScript $GITHUB_REF_NAME" --notes "Install: npm install https://github.com/${{ github.repository }}/releases/download/$GITHUB_REF_NAME/$(ls *.tgz)"
