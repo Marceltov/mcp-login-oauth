@@ -23,7 +23,7 @@ classifiers = [
 ]
 
 [project.urls]
-Documentation = "https://marceltov.github.io/mcp-login-oauth/"
+Documentation = "https://mcp-login-oauth.marceltov.de/"
 Source = "https://github.com/Marceltov/mcp-login-oauth"
 Issues = "https://github.com/Marceltov/mcp-login-oauth/issues"
 Changelog = "https://github.com/Marceltov/mcp-login-oauth/releases"

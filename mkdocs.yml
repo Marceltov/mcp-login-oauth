@@ -1,6 +1,6 @@
 site_name: mcp-login-oauth
 site_description: The OAuth server for MCP clients of FastMCP servers whose login is a form checked by the service behind them.
-site_url: https://marceltov.github.io/mcp-login-oauth/
+site_url: https://mcp-login-oauth.marceltov.de/
 repo_url: https://github.com/Marceltov/mcp-login-oauth
 repo_name: Marceltov/mcp-login-oauth
 edit_uri: edit/main/docs/

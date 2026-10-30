@@ -18,7 +18,7 @@ items:
     summary: Accept clients that identify themselves by a metadata URL, which the MCP spec now prefers over dynamic registration.
     links:
       - {label: "#6", url: "https://github.com/Marceltov/mcp-login-oauth/issues/6"}
-      - {label: "V3", url: "https://marceltov.github.io/mcp-login-oauth/values/#v3-standards-any-client-speaks"}
+      - {label: "V3", url: "https://mcp-login-oauth.marceltov.de/values/#v3-standards-any-client-speaks"}
     details: |
       Fetch and validate the document (HTTPS only, size and time limits), take its `redirect_uris`, cache it within limits, and advertise support in the metadata. Dynamic registration stays.
 
@@ -41,7 +41,7 @@ items:
     title: Python only
     summary: The TypeScript package is gone; TypeScript apps sign in with Better Auth, and a guide says how.
     links:
-      - {label: "Guide", url: "https://marceltov.github.io/mcp-login-oauth/typescript/"}
+      - {label: "Guide", url: "https://mcp-login-oauth.marceltov.de/typescript/"}
       - {label: "PR #9", url: "https://github.com/Marceltov/mcp-login-oauth/pull/9"}
 
   - id: docs-site
@@ -60,7 +60,7 @@ items:
     title: v0.2.0, the gaps the servers needed
     summary: "`check_login` learns the client, tokens bound to a resource, and the issuer on the code redirect."
     links:
-      - {label: "ADR 0002", url: "https://marceltov.github.io/mcp-login-oauth/adr/0002-check-login-learns-the-client/"}
+      - {label: "ADR 0002", url: "https://mcp-login-oauth.marceltov.de/adr/0002-check-login-learns-the-client/"}
       - {label: "PR #2", url: "https://github.com/Marceltov/mcp-login-oauth/pull/2"}
 
   - id: first-release
@@ -70,4 +70,4 @@ items:
     title: v0.1.0, one library for four servers
     summary: The login OAuth of four FastMCP servers in one library, with an encrypted store and revocation for public clients.
     links:
-      - {label: "ADR 0001", url: "https://marceltov.github.io/mcp-login-oauth/adr/0001-shared-login-oauth-library/"}
+      - {label: "ADR 0001", url: "https://mcp-login-oauth.marceltov.de/adr/0001-shared-login-oauth-library/"}
