@@ -14,12 +14,15 @@ When is this library still the right one? When the MCP server is Python (FastMCP
 
 ```mermaid
 flowchart LR
-  browser["Browser"] -- "HttpOnly session cookie" --> next["Next.js + Better Auth"]
-  claude["claude.ai"] -- "OAuth (PKCE)" --> next
-  claude -- "Bearer token" --> mcp["/mcp"]
-  next --- mcp
-  next -- "Bearer JWT, 10 min" --> py["Python backend<br/>(optional)"]
-  py -. "public keys, /api/auth/jwks" .-> next
+  browser["Browser"] -- "session cookie" --> auth
+  claude["claude.ai"] -- "OAuth sign-in" --> auth
+  claude -- "Bearer token" --> mcp
+  subgraph app["Next.js app"]
+    auth["Better Auth"]
+    mcp["/mcp"]
+  end
+  auth -- "Bearer JWT, 10 min" --> py["Python backend<br/>(optional)"]
+  py -. "public keys" .-> auth
 ```
 
 The sign-in lives in the Next.js app; everything behind it only checks tokens.

@@ -59,6 +59,11 @@ theme:
     - content.code.copy
     - content.action.edit
 
+extra_javascript:
+  # Pinned: Material otherwise loads the newest Mermaid 11, whose markup its styles don't all match (javascripts/mermaid.js).
+  - https://unpkg.com/mermaid@11.17.2/dist/mermaid.min.js
+  - javascripts/mermaid.js
+
 extra_css:
   - stylesheets/extra.css
 

@@ -352,3 +352,33 @@
     flex-wrap: wrap;
   }
 }
+
+/* Diagrams in the site's palette: Material reads these for Mermaid, in light and dark mode. */
+:root > * {
+  --md-mermaid-font-family: var(--md-text-font-family), sans-serif;
+  --md-mermaid-edge-color: var(--ml-accent);
+  --md-mermaid-node-bg-color: var(--ml-mist);
+  --md-mermaid-node-fg-color: var(--ml-ink);
+  --md-mermaid-label-bg-color: var(--md-default-bg-color);
+  --md-mermaid-label-fg-color: var(--ml-ink);
+  --md-mermaid-sequence-actor-bg-color: var(--ml-mist);
+  --md-mermaid-sequence-actor-fg-color: var(--ml-ink);
+  --md-mermaid-sequence-actor-border-color: var(--ml-accent);
+  --md-mermaid-sequence-actor-line-color: var(--md-default-fg-color--lighter);
+  --md-mermaid-sequence-actorman-bg-color: var(--ml-mist);
+  --md-mermaid-sequence-actorman-line-color: var(--ml-accent);
+  --md-mermaid-sequence-box-bg-color: var(--ml-mist);
+  --md-mermaid-sequence-box-fg-color: var(--ml-ink);
+  --md-mermaid-sequence-label-bg-color: var(--ml-mist);
+  --md-mermaid-sequence-label-fg-color: var(--ml-ink);
+  --md-mermaid-sequence-loop-bg-color: var(--md-default-bg-color);
+  --md-mermaid-sequence-loop-fg-color: var(--ml-ink);
+  --md-mermaid-sequence-loop-border-color: var(--ml-accent);
+  --md-mermaid-sequence-message-fg-color: var(--ml-ink);
+  --md-mermaid-sequence-message-line-color: var(--ml-accent);
+  --md-mermaid-sequence-note-bg-color: var(--ml-mist);
+  --md-mermaid-sequence-note-fg-color: var(--ml-ink);
+  --md-mermaid-sequence-note-border-color: var(--ml-accent);
+  --md-mermaid-sequence-number-bg-color: var(--ml-accent);
+  --md-mermaid-sequence-number-fg-color: var(--md-default-bg-color);
+}
