@@ -1,8 +1,19 @@
-# mcp-login-oauth
+---
+hide:
+  - toc
+---
 
-The OAuth 2.1 server that MCP clients such as claude.ai and the Claude desktop and mobile apps connect through, for **MCP servers whose login is a form checked by the service behind them**: a Trilium password, an InvoiceNinja or Paperless login. The client signs in once in the browser and then only holds opaque OAuth tokens; your server turns each login into a *grant*, for example a service token minted at login, and reads it back on every request.
+<div class="ml-hero" markdown>
+<img class="ml-hero__mark" src="assets/icon.svg" alt="">
 
-It comes as a [Python package](getting-started/python.md) for FastMCP servers and a [TypeScript package](getting-started/typescript.md) for MCP servers on Node.js, with the same behaviour.
+# Sign-in for MCP servers behind a login form
+
+<p class="ml-hero__lead">claude.ai and the Claude apps sign in once through your server's own login (a Trilium password, a Paperless login) and then only hold OAuth tokens. Your server turns each login into a grant and reads it back on every request.</p>
+
+[Start in Python](getting-started/python.md){ .md-button .md-button--primary }
+[Start in TypeScript](getting-started/typescript.md){ .md-button }
+
+</div>
 
 ## Is this the right library?
 

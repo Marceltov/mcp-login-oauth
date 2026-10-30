@@ -23,6 +23,21 @@ What both packages do, the same in Python and TypeScript ([V3](../values.md#v3-t
 
 ## Resources
 
+```mermaid
+flowchart TD
+  R["request with<br/>Authorization: Bearer …"] --> P{"starts with<br/>the token prefix?"}
+  P -- no --> S{"verify_static<br/>accepts it?"}
+  S -- yes --> G[the static grant]
+  S -- no --> U[401, pointing at the resource metadata]
+  P -- yes --> K{"in the store<br/>and not expired?"}
+  K -- no --> U
+  K -- yes --> B{"bound to this resource,<br/>or to nothing?"}
+  B -- no --> U
+  B -- yes --> OK[the grant from the login]
+```
+
+Every request ends in a grant or in a 401 that tells the client where to sign in.
+
 A client that names a `resource` (RFC 8707) gets codes and tokens bound to it. A token bound to anything other than the MCP endpoint (or, in TypeScript, one of `resources`) is refused, and so is its refresh; this also signs clients out when the base URL changes. A client that names no resource gets a token that counts as bound to the MCP endpoint.
 
 ## What is stored, and what never is
