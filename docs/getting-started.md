@@ -1,4 +1,4 @@
-# Getting started
+# Install and first server
 
 A FastMCP server in front of Trilium Notes, where people sign in with their Trilium password.
 
@@ -55,5 +55,5 @@ What happens:
 
 ## Next
 
-- Every argument, the callbacks, the login fields and the defaults: [Reference](reference.md).
-- Lifetimes, refusals and what is stored: [Behaviour](behaviour.md).
+- Every argument, the callbacks, the login fields and the defaults: [Python API](reference.md).
+- Lifetimes, refusals and what is stored: [Lifetimes, flow and limits](behaviour.md).

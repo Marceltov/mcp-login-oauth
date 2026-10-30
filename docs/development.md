@@ -1,4 +1,4 @@
-# Development
+# Development and releases
 
 ```bash
 uv sync

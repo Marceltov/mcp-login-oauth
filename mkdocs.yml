@@ -12,13 +12,17 @@ hooks:
 nav:
   - Home: index.md
   - What mcp-login-oauth stands for: values.md
-  - Where mcp-login-oauth is going: roadmap.md
-  - Getting started: getting-started.md
-  - Reference: reference.md
-  - Behaviour: behaviour.md
-  - "TypeScript: use Better Auth": typescript.md
-  - Development: development.md
-  - Design decisions:
+  - Start:
+      - Install and first server: getting-started.md
+  - Guides:
+      - Coming from TypeScript: typescript.md
+  - Reference:
+      - Python API: reference.md
+      - Lifetimes, flow and limits: behaviour.md
+  - Contributing:
+      - Development and releases: development.md
+      - Roadmap: roadmap.md
+  - Decisions:
       - One library for all FastMCP servers: adr/0001-shared-login-oauth-library.md
       - check_login learns the client: adr/0002-check-login-learns-the-client.md
 

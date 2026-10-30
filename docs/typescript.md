@@ -1,4 +1,4 @@
-# TypeScript: use Better Auth
+# Coming from TypeScript
 
 **mcp-login-oauth is Python only. A TypeScript app, with or without an MCP endpoint, signs in with [Better Auth](https://better-auth.com).** This page says why, how the pieces fit, and how to wire it up in a Next.js app.
 
@@ -8,7 +8,7 @@
 - **Sign-in is security code.** Rebuilding all of that next to this library would be a second, smaller copy of something maintained and used widely. This library stays small: the OAuth server for FastMCP servers whose login is a form checked by the service behind them.
 - **It runs in your app**, an open-source (MIT) library in the app's process, with its tables in your own database. Nothing goes to a third party; its telemetry is off unless you turn it on.
 
-When is this library still the right one? When the MCP server is Python (FastMCP) and the login is another service's own, so that the grant carries that service's credentials: see [Getting started](getting-started.md).
+When is this library still the right one? When the MCP server is Python (FastMCP) and the login is another service's own, so that the grant carries that service's credentials: see [Install and first server](getting-started.md).
 
 ## How the pieces fit
 

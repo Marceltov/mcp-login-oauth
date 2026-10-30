@@ -1,4 +1,4 @@
-# Behaviour
+# Lifetimes, flow and limits
 
 What the library does, and what it refuses.
 

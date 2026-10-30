@@ -10,17 +10,6 @@
 
 items:
   # ---- open ------------------------------------------------------------------------------------------------------------
-  - id: pypi
-    status: next
-    when: Now
-    icon: package-variant-closed
-    title: On PyPI
-    summary: "Publish the package as `mcp-login-oauth`, so that servers `uv add` it instead of pinning a git tag."
-    links:
-      - {label: "#11", url: "https://github.com/Marceltov/mcp-login-oauth/issues/11"}
-    details: |
-      A release workflow on `v*` tags publishes through PyPI Trusted Publishing, with no API token. The first release is `v0.2.1`, the same code as v0.2.0 with the package metadata.
-
   - id: client-id-metadata
     status: next
     when: Next
@@ -34,6 +23,27 @@ items:
       Fetch and validate the document (HTTPS only, size and time limits), take its `redirect_uris`, cache it within limits, and advertise support in the metadata. Dynamic registration stays.
 
   # ---- done, newest first ----------------------------------------------------------------------------------------------
+  - id: pypi
+    status: done
+    date: 2026-10-30
+    icon: package-variant-closed
+    title: On PyPI
+    summary: "`uv add mcp-login-oauth`: v0.2.1 is published from its tag through PyPI Trusted Publishing, with no API token."
+    links:
+      - {label: "PyPI", url: "https://pypi.org/project/mcp-login-oauth/"}
+      - {label: "v0.2.1", url: "https://github.com/Marceltov/mcp-login-oauth/releases/tag/v0.2.1"}
+      - {label: "#11", url: "https://github.com/Marceltov/mcp-login-oauth/issues/11"}
+
+  - id: python-only
+    status: done
+    date: 2026-10-30
+    icon: language-python
+    title: Python only
+    summary: The TypeScript package is gone; TypeScript apps sign in with Better Auth, and a guide says how.
+    links:
+      - {label: "Guide", url: "https://marceltov.github.io/mcp-login-oauth/typescript/"}
+      - {label: "PR #9", url: "https://github.com/Marceltov/mcp-login-oauth/pull/9"}
+
   - id: docs-site
     status: done
     date: 2026-10-30
