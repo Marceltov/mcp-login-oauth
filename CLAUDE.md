@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-mcp-login-oauth: the OAuth server for MCP clients and the sign-in behind it, as a Python package (repository root) and a TypeScript package (`typescript/`).
+mcp-login-oauth: the OAuth server for MCP clients of servers whose login is a form checked by a service (or one OIDC provider), as a Python package (repository root) and a TypeScript package (`typescript/`). Apps with a web UI sign in with Better Auth instead (`docs/adr/0004-*`).
 
 ## Rules
 

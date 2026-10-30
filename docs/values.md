@@ -1,6 +1,6 @@
 # What mcp-login-oauth stands for
 
-mcp-login-oauth signs people in to Marcel's apps and MCP servers: it is the OAuth server that MCP clients such as claude.ai connect through, and the sign-in behind it, in a Python and a TypeScript package. This page says what it will stay, whoever uses it and whatever it grows into.
+mcp-login-oauth is the OAuth server that MCP clients such as claude.ai connect through, for MCP servers whose login is a form checked by a service or a sign-in at one OIDC provider, in a Python and a TypeScript package. Apps with a web UI sign in with Better Auth instead (ADR 0004). This page says what it will stay, whoever uses it and whatever it grows into.
 
 It is for anyone deciding whether to trust their app's sign-in to it, and it is the yardstick for every change: a contribution, from a person or an AI, is judged against these points, and a review names the one it touches ("this breaks V3").
 
@@ -20,9 +20,9 @@ What the library stores can't be used by whoever reads the file. Keys are HMACs 
 
 A code, a refresh token and a sign-in link work once, also across a restart. A sign-in completes only in the browser that started it. Revoking a client or a person ends their access at once, not when a token runs out.
 
-**Rules out:** single-use checks kept only in memory; a sign-in link or magic link that signs in any browser; revocation that waits for expiry; one secret shared by every client so that only "everyone" can be revoked.
+**Rules out:** single-use checks kept only in memory; a login link that signs in any browser; revocation that waits for expiry; one secret shared by every client so that only "everyone" can be revoked.
 
-**ADRs:** [0003](adr/0003-typescript-package.md), [0004](adr/0004-complete-sign-in.md)
+**ADRs:** [0003](adr/0003-typescript-package.md)
 
 ## What you can rely on
 
@@ -32,7 +32,7 @@ Both packages have the same features and the same behaviour: methods, lifetimes,
 
 **Rules out:** a feature only one package has; a release of a feature in one language while the other waits; defaults that differ between the packages; taking a library that exists for one language only when it would make the two behave differently.
 
-**ADRs:** [0003](adr/0003-typescript-package.md), [0004](adr/0004-complete-sign-in.md)
+**ADRs:** [0003](adr/0003-typescript-package.md), [0004](adr/0004-web-apps-sign-in-with-better-auth.md)
 
 ### V4. Standards any client speaks
 
@@ -54,11 +54,11 @@ The library runs in the app's own process and keeps its data in its own SQLite f
 
 ### V6. The app says who may sign in; the library does the rest
 
-The app supplies who may sign in and what a sign-in grants. Everything that would be the same in every app (the OAuth server, the sign-in methods, the pages, the session, the mail) belongs in the library. The library reads no environment and depends on no web framework: the app passes values in and mounts handlers that take a `Request` and return a `Response`.
+The app supplies who may sign in and what a sign-in grants. Everything that would be the same in every server (the OAuth server, the login and dead-end pages, the store) belongs in the library. The library reads no environment and depends on no web framework: the app passes values in and mounts handlers that take a `Request` and return a `Response`.
 
 **Rules out:** app-specific code paths in the library; reading `process.env` or `os.environ` in the library; a dependency on Next.js, Starlette or any other framework; an app copying sign-in code the library could own.
 
-**ADRs:** [0001](adr/0001-shared-login-oauth-library.md), [0002](adr/0002-check-login-learns-the-client.md), [0003](adr/0003-typescript-package.md), [0004](adr/0004-complete-sign-in.md)
+**ADRs:** [0001](adr/0001-shared-login-oauth-library.md), [0002](adr/0002-check-login-learns-the-client.md), [0003](adr/0003-typescript-package.md), [0004](adr/0004-web-apps-sign-in-with-better-auth.md)
 
 ## Changing this page
 
