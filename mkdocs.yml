@@ -4,7 +4,7 @@ site_url: https://mcp-login-oauth.marceltov.de/
 repo_url: https://github.com/Marceltov/mcp-login-oauth
 repo_name: Marceltov/mcp-login-oauth
 edit_uri: edit/main/docs/
-copyright: Copyright &copy; 2026 Marcel Bruckner. Licensed under <a href="https://github.com/Marceltov/mcp-login-oauth/blob/main/LICENSE">AGPL-3.0-or-later</a>
+copyright: Copyright &copy; 2026 Marcel Bruckner. Licensed under <a href="https://github.com/Marceltov/mcp-login-oauth/blob/main/LICENSE">MIT</a>
 
 hooks:
   - docs_hooks/roadmap.py
@@ -25,6 +25,7 @@ nav:
   - Decisions:
       - One library for all FastMCP servers: adr/0001-shared-login-oauth-library.md
       - check_login learns the client: adr/0002-check-login-learns-the-client.md
+      - MIT, not AGPL: adr/0003-mit-licence.md
 
 theme:
   name: material

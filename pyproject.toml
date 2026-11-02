@@ -1,9 +1,9 @@
 [project]
 name = "mcp-login-oauth"
-version = "0.2.2"
+version = "0.2.3"
 description = "OAuth 2.1 browser login for FastMCP servers whose login is a form checked by the service behind them"
 readme = "README.md"
-license = "AGPL-3.0-or-later"
+license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "Marcel Bruckner" }]
 requires-python = ">=3.12"

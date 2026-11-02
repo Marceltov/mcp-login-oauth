@@ -45,4 +45,4 @@ Needs Python ≥ 3.12 and FastMCP ≥ 4.1.3.
 
 Copyright © 2026 Marcel Bruckner.
 
-Licensed under the [GNU Affero General Public License v3.0 or later](https://github.com/Marceltov/mcp-login-oauth/blob/main/LICENSE) (AGPL-3.0-or-later). You may use, modify, and redistribute it, but any modified version — **including one you run as a network service** — must be released under the same license with its source made available to its users, and the original copyright notice preserved. See [LICENSE](https://github.com/Marceltov/mcp-login-oauth/blob/main/LICENSE) for the full terms.
+Licensed under the [MIT License](https://github.com/Marceltov/mcp-login-oauth/blob/main/LICENSE). Releases up to 0.2.2 were AGPL-3.0-or-later and stay so.
