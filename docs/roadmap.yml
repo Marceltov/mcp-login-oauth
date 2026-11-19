@@ -23,6 +23,15 @@ items:
       Fetch and validate the document (HTTPS only, size and time limits), take its `redirect_uris`, cache it within limits, and advertise support in the metadata. Dynamic registration stays.
 
   # ---- done, newest first ----------------------------------------------------------------------------------------------
+  - id: login-page-design
+    status: done
+    date: 2026-11-19
+    icon: form-textbox-password
+    title: v0.3.0, a designed login page
+    summary: The login and dead-end pages in the docs' cobalt and ink, light and dark, with a clear error, a stronger warning and visible focus; still no JavaScript and nothing loaded from elsewhere.
+    links:
+      - {label: "Release", url: "https://github.com/Marceltov/mcp-login-oauth/releases/tag/v0.3.0"}
+
   - id: pypi
     status: done
     date: 2026-10-30
