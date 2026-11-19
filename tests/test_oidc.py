@@ -165,3 +165,9 @@ def test_userinfo_for_another_account_is_refused(oidc_client, idp):
     _, _, url = to_provider(oidc_client, idp)
     r = back(oidc_client, url)
     assert r.status_code == 400 and "another account" in r.text
+
+
+def test_provider_failure_does_not_blame_the_app(oidc_client, idp):
+    idp.token_error = "invalid_client"
+    _, _, url = to_provider(oidc_client, idp)
+    assert "Reconnect" not in back(oidc_client, url).text

@@ -245,8 +245,8 @@ class LoginOAuthProvider(OAuthProvider):
                     break
         return Response(status_code=200)
 
-    def _dead_end(self, heading: str, what: str, status: int) -> Response:
-        return dead_end_page(self.service_name, heading, what, status)
+    def _dead_end(self, heading: str, what: str, status: int, *, interrupted: bool = True) -> Response:
+        return dead_end_page(self.service_name, heading, what, status, interrupted=interrupted)
 
     def _expired(self) -> Response:
         return self._dead_end("Login link expired or already used",
@@ -345,7 +345,8 @@ class LoginOAuthProvider(OAuthProvider):
         name = self.oidc.name
         if error := q.get("error"):
             return self._dead_end(f"Sign-in at {name} not completed",
-                                  f"{name} answered \"{error}\". Go back to your app and start the login again.", 400)
+                                  f"{name} answered \"{error}\". Go back to your app and start the login again.", 400,
+                                  interrupted=False)
         params, who, page = await self._context(data["pending_id"], pending)
         try:
             tokens = await self.oidc_client.exchange(code=q.get("code", ""), verifier=data["verifier"],
@@ -354,7 +355,7 @@ class LoginOAuthProvider(OAuthProvider):
         except OidcError as e:
             log.warning("sign-in at the provider failed: %s", e)
             return self._dead_end(f"Sign-in at {name} failed", f"{e} Go back to your app and start the login again.",
-                                  400)
+                                  400, interrupted=False)
         try:
             grant = await self._check(claims, who)
         except LoginRejected as rejected:

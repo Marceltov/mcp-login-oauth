@@ -125,14 +125,16 @@ def login_page(*, service_name: str, fields: Sequence[LoginField], pending_id: s
                  f"{inputs}<button>{button}</button></form>", status)
 
 
-def dead_end_page(service_name: str, heading: str, what: str, status: int) -> HTMLResponse:
+def dead_end_page(service_name: str, heading: str, what: str, status: int, *, interrupted: bool = True) -> HTMLResponse:
     """A login that can't continue from here. The usual cause is the MCP client interrupting its own
     flow (claude.ai asking you to log in to claude.ai partway through, then dropping the finished login),
-    so say that it isn't the server's fault and give the fix."""
+    so say that it isn't the server's fault and give the fix. With `interrupted=False` (the sign-in at an
+    identity provider failed) only `what` is shown, which names the cause and the next step."""
+    steps = ("<div class=\"steps\">"
+             "<p><b>Why</b>Your app most likely interrupted its own login, for example by asking you to "
+             "log in to the app itself partway through, and then lost track of this one. Nothing is wrong "
+             "with this server.</p><p><b>Fix</b>Go back to your app and use its Reconnect button, or "
+             "remove the connector and add it again. Being logged in to the app first avoids the "
+             "interruption.</p></div>") if interrupted else ""
     return _page(service_name, "Login can't continue",
-                 f'<h2>{escape(heading)}</h2><p class="consent">{escape(what)}</p><div class="steps">'
-                 "<p><b>Why</b>Your app most likely interrupted its own login, for example by asking you to "
-                 "log in to the app itself partway through, and then lost track of this one. Nothing is wrong "
-                 "with this server.</p><p><b>Fix</b>Go back to your app and use its Reconnect button, or "
-                 "remove the connector and add it again. Being logged in to the app first avoids the "
-                 "interruption.</p></div>", status)
+                 f'<h2>{escape(heading)}</h2><p class="consent">{escape(what)}</p>{steps}', status)
