@@ -2,7 +2,8 @@
 
 The provider only answers "who is this": the browser goes there with the authorization code flow
 (PKCE, `state`, `nonce`), comes back to `/login/callback`, and the ID token's claims go to the server's
-`check_login`. Nothing from the provider is logged or passed on; only the grant `check_login` returns
+`check_login`. Nothing from the provider is logged or stored, and its access token is passed to
+`check_login` only when `OidcLogin.pass_access_token` asks for it; only the grant `check_login` returns
 is kept.
 """
 
@@ -29,7 +30,11 @@ class OidcError(Exception):
 class OidcLogin:
     """An OpenID Connect provider to sign in with. `issuer` is the provider's issuer URL exactly as it
     publishes it (Authentik: `https://<host>/application/o/<slug>/`). Register `<base_url>/login/callback`
-    there as the redirect URI. Without `client_secret` the client is public and relies on PKCE alone."""
+    there as the redirect URI. Without `client_secret` the client is public and relies on PKCE alone.
+
+    `pass_access_token` gives `check_login` the provider's access token as `claims["access_token"]`, for a
+    server that turns the sign-in into a credential of the service behind it (an app token made in the
+    person's name). It is never stored or logged; only the grant `check_login` returns is kept."""
 
     issuer: str
     client_id: str
@@ -37,6 +42,7 @@ class OidcLogin:
     scopes: tuple[str, ...] = ("openid", "profile", "email")
     name: str = "single sign-on"
     verify_tls: bool = True
+    pass_access_token: bool = False
 
 
 def pkce_pair() -> tuple[str, str]:

@@ -158,6 +158,26 @@ def test_profile_claims_from_userinfo(app_factory, idp, monkeypatch):
         _, _, url = to_provider(c, idp)
         assert back(c, url).status_code == 302
     assert seen[0]["preferred_username"] == "marcel" and seen[0]["groups"] == ["trading"] and seen[0]["aud"] == CLIENT_ID
+    assert "access_token" not in seen[0]  # nothing from the provider is passed on unless asked for
+
+
+def test_access_token_is_passed_on_when_asked_for(app_factory, idp, monkeypatch):
+    """A server that turns the sign-in into a credential of the service (e.g. an app token made with the
+    provider's access token) gets that access token next to the claims, only for `check_login`."""
+    seen = []
+
+    async def remember(claims):
+        seen.append(claims)
+        return {"user": claims["preferred_username"]}
+    real_init = OidcClient.__init__
+    monkeypatch.setattr(OidcClient, "__init__",
+                        lambda self, login, transport=None: real_init(self, login, transport=httpx.MockTransport(idp.handler)))
+    login = OidcLogin(issuer=ISSUER, client_id=CLIENT_ID, client_secret=CLIENT_SECRET, name="Authentik",
+                      pass_access_token=True)
+    with app_factory(fields=[], oidc=login, check_login=remember) as c:
+        _, _, url = to_provider(c, idp)
+        assert back(c, url).status_code == 302
+    assert seen[0]["access_token"] == "at" and seen[0]["preferred_username"] == "marcel"
 
 
 def test_userinfo_for_another_account_is_refused(oidc_client, idp):

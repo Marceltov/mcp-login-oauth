@@ -82,5 +82,6 @@ Sign in at an OpenID Connect provider (Authentik, Keycloak, …) instead of a fo
 | `scopes` | Asked for at the provider. Authentik puts `groups` into `profile`. |
 | `name` | Shown on the button and in error pages. |
 | `verify_tls` | `False` turns certificate checks off for the provider's endpoints; never the default. |
+| `pass_access_token` | `True` adds the provider's access token to the claims as `access_token`, for a server that turns the sign-in into a credential of the service behind it (e.g. an app token created in the person's name). It goes to `check_login` only; it is never stored or logged. Off by default. |
 
 `check_login` then receives the ID token's claims, completed from the userinfo endpoint, after the library checked its signature (the provider's JWKS), issuer, audience (`client_id`), expiry and nonce. It decides who gets in: raise `LoginRejected("…")` for someone who may not, and the page shows the message with the button to try again.

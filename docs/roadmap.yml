@@ -23,6 +23,15 @@ items:
       Fetch and validate the document (HTTPS only, size and time limits), take its `redirect_uris`, cache it within limits, and advertise support in the metadata. Dynamic registration stays.
 
   # ---- done, newest first ----------------------------------------------------------------------------------------------
+  - id: pass-access-token
+    status: done
+    date: 2026-11-19
+    icon: key-arrow-right
+    title: v0.5.0, the provider's access token for check_login
+    summary: "`OidcLogin(pass_access_token=True)` lets a server create a credential of its service in the signed-in person's name."
+    links:
+      - {label: "ADR 0005", url: "https://mcp-login-oauth.marceltov.de/adr/0005-pass-the-access-token-on-request/"}
+
   - id: oidc-login
     status: done
     date: 2026-11-19
