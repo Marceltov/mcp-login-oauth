@@ -78,8 +78,8 @@ class OidcClient:
         sep = "&" if "?" in meta["authorization_endpoint"] else "?"
         return f"{meta['authorization_endpoint']}{sep}{query}"
 
-    async def exchange(self, *, code: str, verifier: str, redirect_uri: str) -> str:
-        """Trade the code for tokens; returns the ID token."""
+    async def exchange(self, *, code: str, verifier: str, redirect_uri: str) -> dict:
+        """Trade the code for tokens; returns the token response (with `id_token`)."""
         meta = await self.metadata()
         data = {"grant_type": "authorization_code", "code": code, "redirect_uri": redirect_uri,
                 "code_verifier": verifier, "client_id": self.login.client_id}
@@ -95,10 +95,30 @@ class OidcClient:
             except ValueError:
                 code_ = r.status_code
             raise OidcError(f"{self.login.name} refused the sign-in ({code_}).")
-        id_token = r.json().get("id_token")
-        if not isinstance(id_token, str):
+        tokens = r.json()
+        if not isinstance(tokens.get("id_token"), str):
             raise OidcError(f"{self.login.name} sent no ID token.")
-        return id_token
+        return tokens
+
+    async def claims(self, tokens: dict, nonce: str) -> dict:
+        """The verified ID token's claims, completed from the userinfo endpoint: providers such as Authentik
+        put profile claims (`preferred_username`, `groups`) only there unless told otherwise. The ID token's
+        own claims win; userinfo for another `sub` is refused."""
+        claims = await self.verify(tokens["id_token"], nonce)
+        meta = await self.metadata()
+        access = tokens.get("access_token")
+        if not isinstance(access, str) or not isinstance(meta.get("userinfo_endpoint"), str):
+            return claims
+        try:
+            r = await self.http.get(meta["userinfo_endpoint"], headers={"Authorization": f"Bearer {access}",
+                                                                        "Accept": "application/json"})
+            r.raise_for_status()
+            info = r.json()
+        except (httpx.HTTPError, ValueError) as e:
+            raise OidcError(f"{self.login.name}'s user info could not be read ({type(e).__name__}).") from None
+        if not isinstance(info, dict) or info.get("sub") != claims["sub"]:
+            raise OidcError(f"{self.login.name}'s user info is for another account.")
+        return {**info, **claims}
 
     async def _key(self, kid: str | None) -> jwt.PyJWK:
         if kid not in self._keys:

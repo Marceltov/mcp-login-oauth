@@ -83,4 +83,4 @@ Sign in at an OpenID Connect provider (Authentik, Keycloak, …) instead of a fo
 | `name` | Shown on the button and in error pages. |
 | `verify_tls` | `False` turns certificate checks off for the provider's endpoints; never the default. |
 
-`check_login` then receives the ID token's claims after the library checked its signature (the provider's JWKS), issuer, audience (`client_id`), expiry and nonce. It decides who gets in: raise `LoginRejected("…")` for someone who may not, and the page shows the message with the button to try again.
+`check_login` then receives the ID token's claims, completed from the userinfo endpoint, after the library checked its signature (the provider's JWKS), issuer, audience (`client_id`), expiry and nonce. It decides who gets in: raise `LoginRejected("…")` for someone who may not, and the page shows the message with the button to try again.

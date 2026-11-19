@@ -26,6 +26,7 @@ Chosen: **a login kind in the library**, v0.4.0.
 * The login page keeps the consent card ("claude.ai wants access to … Only continue if you started this") and shows one button, "Continue with <name>". It does not redirect on its own: that moment is the protection against a login someone else started.
 * Authorization code flow with PKCE, `state` and `nonce`. The state, verifier and nonce wait in the encrypted store for the login link's lifetime and are deleted when the callback reads them (V2).
 * The ID token is checked with PyJWT against the provider's JWKS (RS256, ES256, PS256): signature, issuer from discovery, audience = client id, `exp`, `iat`, `nonce`, 60 s leeway. An unknown key id fetches the keys once more.
+* The claims are completed from the userinfo endpoint: Authentik leaves `preferred_username` and `groups` out of the ID token by default. The ID token's claims win; userinfo for another `sub` is refused.
 * `check_login` receives the claims and decides: a grant, or `LoginRejected` shown on the page. The library lets nobody in by itself.
 * The provider is called with httpx and a `truststore` context (convention: HTTPS clients); `verify_tls=False` is the explicit off switch. httpx, truststore and PyJWT are now direct dependencies.
 

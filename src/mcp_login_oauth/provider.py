@@ -348,9 +348,9 @@ class LoginOAuthProvider(OAuthProvider):
                                   f"{name} answered \"{error}\". Go back to your app and start the login again.", 400)
         params, who, page = await self._context(data["pending_id"], pending)
         try:
-            id_token = await self.oidc_client.exchange(code=q.get("code", ""), verifier=data["verifier"],
-                                                       redirect_uri=self._callback_url())
-            claims = await self.oidc_client.verify(id_token, data["nonce"])
+            tokens = await self.oidc_client.exchange(code=q.get("code", ""), verifier=data["verifier"],
+                                                     redirect_uri=self._callback_url())
+            claims = await self.oidc_client.claims(tokens, data["nonce"])
         except OidcError as e:
             log.warning("sign-in at the provider failed: %s", e)
             return self._dead_end(f"Sign-in at {name} failed", f"{e} Go back to your app and start the login again.",

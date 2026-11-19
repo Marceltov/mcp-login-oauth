@@ -28,6 +28,8 @@ class FakeProvider:
     sign_with: rsa.RSAPrivateKey | None = None
     seen_token_requests: list = field(default_factory=list)
     jwks_fetches: int = 0
+    claims_in_userinfo_only: tuple = ()  # claims left out of the ID token and served by userinfo (Authentik's default)
+    userinfo_sub: str | None = None
 
     def jwks(self) -> dict:
         public = json.loads(jwt.algorithms.RSAAlgorithm.to_jwk(self.key.public_key()))
@@ -35,7 +37,8 @@ class FakeProvider:
 
     def id_token(self, nonce: str) -> str:
         now = int(time.time())
-        claims = {"iss": ISSUER, "aud": CLIENT_ID, "iat": now, "exp": now + 300, "nonce": nonce, **self.claims,
+        profile = {k: v for k, v in self.claims.items() if k not in self.claims_in_userinfo_only}
+        claims = {"iss": ISSUER, "aud": CLIENT_ID, "iat": now, "exp": now + 300, "nonce": nonce, **profile,
                   **self.overrides}
         return jwt.encode(claims, self.sign_with or self.key, algorithm="RS256", headers={"kid": self.kid})
 
@@ -44,7 +47,12 @@ class FakeProvider:
         if path.endswith("/.well-known/openid-configuration"):
             return httpx.Response(200, json={"issuer": ISSUER, "authorization_endpoint": "https://idp.example/authorize/",
                                              "token_endpoint": "https://idp.example/token/",
-                                             "jwks_uri": "https://idp.example/jwks/"})
+                                             "jwks_uri": "https://idp.example/jwks/",
+                                             "userinfo_endpoint": "https://idp.example/userinfo/"})
+        if path == "/userinfo/":
+            if request.headers.get("authorization") != "Bearer at":
+                return httpx.Response(401)
+            return httpx.Response(200, json={**self.claims, "sub": self.userinfo_sub or self.claims["sub"]})
         if path == "/jwks/":
             self.jwks_fetches += 1
             return httpx.Response(200, json=self.jwks())

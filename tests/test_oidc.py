@@ -141,3 +141,27 @@ def test_fields_and_oidc_exclude_each_other(app_factory):
 
 def test_no_callback_route_without_oidc(client):
     assert client.get("/login/callback", params={"state": "x"}).status_code == 404
+
+
+def test_profile_claims_from_userinfo(app_factory, idp, monkeypatch):
+    """Authentik leaves preferred_username and groups out of the ID token by default; userinfo has them."""
+    seen = []
+
+    async def remember(claims):
+        seen.append(claims)
+        return {"user": claims["preferred_username"]}
+    real_init = OidcClient.__init__
+    monkeypatch.setattr(OidcClient, "__init__",
+                        lambda self, login, transport=None: real_init(self, login, transport=httpx.MockTransport(idp.handler)))
+    idp.claims_in_userinfo_only = ("preferred_username", "groups")
+    with app_factory(fields=[], oidc=LOGIN, check_login=remember) as c:
+        _, _, url = to_provider(c, idp)
+        assert back(c, url).status_code == 302
+    assert seen[0]["preferred_username"] == "marcel" and seen[0]["groups"] == ["trading"] and seen[0]["aud"] == CLIENT_ID
+
+
+def test_userinfo_for_another_account_is_refused(oidc_client, idp):
+    idp.userinfo_sub = "someone-else"
+    _, _, url = to_provider(oidc_client, idp)
+    r = back(oidc_client, url)
+    assert r.status_code == 400 and "another account" in r.text
