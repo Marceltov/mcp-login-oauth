@@ -21,6 +21,10 @@ What the library does, and what it refuses.
 - **Token:** a code works once; a refresh token works once and returns a new pair. Both stay spent across a restart, because the store deletes them as it reads them.
 - **Revocation** (RFC 7009) works for public clients like claude.ai too, which the MCP SDK's own `/revoke` rejects. `on_revoke` runs for the revoked grant.
 
+## Signing in at a provider
+
+With `oidc=`, pressing the button stores a random `state`, a PKCE verifier and a `nonce` (encrypted, for the login link's lifetime) and sends the browser to the provider. `/login/callback` deletes the state as it reads it, so a second visit is a dead end; trades the code (PKCE, the client secret as HTTP Basic when there is one); checks the ID token (RS256, ES256 or PS256 from the provider's keys, issuer, audience, `exp`, `iat`, `nonce`, 60 s leeway; an unknown key id fetches the keys once more); then calls `check_login` with the claims. An `error` from the provider, a refused code or a token that doesn't check out ends on a page that names the cause and says to start again from the app. Tokens and claims are never logged.
+
 ## Resources
 
 ```mermaid

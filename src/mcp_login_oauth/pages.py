@@ -111,16 +111,18 @@ def _inputs(fields: Sequence[LoginField]) -> str:
 
 
 def login_page(*, service_name: str, fields: Sequence[LoginField], pending_id: str, client_name: str,
-               redirect_host: str, error: str = "", status: int = 200) -> HTMLResponse:
-    """Who is asking, where the code goes, and the form."""
+               redirect_host: str, error: str = "", status: int = 200, oidc_name: str | None = None) -> HTMLResponse:
+    """Who is asking, where the code goes, and the form. With `oidc_name`, the form is one button that
+    continues at that provider."""
     err = f'<p class="error" role="alert">{escape(error)}</p>' if error else ""
     inputs = _inputs(fields)
+    button = f"Continue with {escape(oidc_name)}" if oidc_name else "Authorize"
     return _page(service_name, "Sign in",
                  f'{err}<p class="consent"><b>{escape(client_name)}</b> wants access to your {escape(service_name)}. '
                  f'After login you will be sent to <b class="host">{escape(redirect_host)}</b>. '
                  '<span class="warn">Only continue if you started this.</span></p>'
                  f'<form method="post"><input type="hidden" name="id" value="{escape(pending_id)}">'
-                 f"{inputs}<button>Authorize</button></form>", status)
+                 f"{inputs}<button>{button}</button></form>", status)
 
 
 def dead_end_page(service_name: str, heading: str, what: str, status: int) -> HTMLResponse:

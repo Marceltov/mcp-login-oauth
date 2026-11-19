@@ -53,6 +53,27 @@ What happens:
 3. The returned dict is the **grant**. It is stored encrypted, and every tool reads it from the access token.
 4. When the client revokes, `on_revoke` logs the minted token out of Trilium.
 
+## A server that signs in through Authentik
+
+For a service without a login of its own, let the household's identity provider decide:
+
+```python
+from mcp_login_oauth import LoginOAuthProvider, LoginRejected, OidcLogin, build_store
+
+async def check_login(claims):
+    if "trading" not in claims.get("groups", []):
+        raise LoginRejected(f"{claims.get('preferred_username')} may not use OpenBB.")
+    return {"user": claims["preferred_username"]}
+
+auth = LoginOAuthProvider(
+    base_url="https://openbb-mcp.example.org", store=build_store(data_dir / "oauth", secret=secret, salt="openbb-mcp"),
+    service_name="OpenBB", fields=[], check_login=check_login, token_prefix="obb_",
+    oidc=OidcLogin(issuer="https://authentik.example.org/application/o/openbb-mcp/", client_id=client_id,
+                   client_secret=client_secret, name="Authentik"))
+```
+
+In Authentik: an OAuth2/OpenID provider (confidential, redirect URI `https://openbb-mcp.example.org/login/callback`, the default scope mappings `openid`, `profile`, `email`) and an application for it. Who may sign in at all can also be limited there with a policy binding; `check_login` is the server's own say.
+
 ## Next
 
 - Every argument, the callbacks, the login fields and the defaults: [Python API](reference.md).

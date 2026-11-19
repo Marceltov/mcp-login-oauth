@@ -40,6 +40,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, RedirectResponse, Response
 from starlette.routing import Route
 
+from mcp_login_oauth.oidc import OidcClient, OidcError, OidcLogin, pkce_pair
 from mcp_login_oauth.pages import LoginField, dead_end_page, login_page
 
 log = logging.getLogger("mcp_login_oauth")
@@ -73,13 +74,19 @@ class LoginOAuthProvider(OAuthProvider):
                  check_login: CheckLogin, token_prefix: str, on_revoke: OnRevoke | None = None,
                  verify_static: VerifyStatic | None = None, pending_ttl: int = 600, code_ttl: int = 300,
                  access_ttl: int = 3600, refresh_ttl: int = 30 * 24 * 3600, failed_login_delay: float = 1.0,
-                 max_login_attempts: int = 5):
+                 max_login_attempts: int = 5, oidc: OidcLogin | None = None):
         super().__init__(base_url=base_url,
                          client_registration_options=ClientRegistrationOptions(enabled=True),
                          revocation_options=RevocationOptions(enabled=True))
         self.store = store
         self.service_name = service_name
         self.fields = list(fields)
+        if oidc and self.fields:
+            raise ValueError("a login with oidc= has no form fields: the provider asks who you are")
+        if not oidc and not self.fields:
+            raise ValueError("a form login needs at least one field (or pass oidc= to sign in at a provider)")
+        self.oidc = oidc
+        self.oidc_client = OidcClient(oidc) if oidc else None
         self.check_login = check_login
         self._check_wants_client = _takes_two_arguments(check_login)
         self.token_prefix = token_prefix
@@ -192,7 +199,8 @@ class LoginOAuthProvider(OAuthProvider):
                 routes.append(self._metadata_route(r))
             elif path != "/revoke":
                 routes.append(r)
-        return [*routes, Route("/login", self._login, methods=["GET", "POST"]),
+        extra = [Route("/login/callback", self._callback, methods=["GET"])] if self.oidc else []
+        return [*routes, Route("/login", self._login, methods=["GET", "POST"]), *extra,
                 Route("/revoke", self._revoke, methods=["POST"])]
 
     def _metadata_route(self, route: Route) -> Route:
@@ -240,25 +248,23 @@ class LoginOAuthProvider(OAuthProvider):
     def _dead_end(self, heading: str, what: str, status: int) -> Response:
         return dead_end_page(self.service_name, heading, what, status)
 
-    async def _login(self, request: Request) -> Response:
-        form = await request.form() if request.method == "POST" else request.query_params
-        pending_id = form.get("id", "")
-        pending = await self.store.get(pending_id, collection="pending") \
-            if isinstance(pending_id, str) and pending_id else None
-        if not pending:
-            return self._dead_end("Login link expired or already used",
-                                  f"Login links work once, for {self.pending_ttl // 60} minutes, and end after "
-                                  f"{self.max_login_attempts} failed attempts.", 400)
-        if pending.get("done"):
-            # A browser re-submitted a login that already succeeded (seen with claude.ai's connector flow).
-            return self._dead_end("Login already completed",
-                                  "Your login was accepted a moment ago and the browser sent the form a second "
-                                  "time. If your app now shows the connector without tools, it dropped that "
-                                  "finished login.", 200)
+    def _expired(self) -> Response:
+        return self._dead_end("Login link expired or already used",
+                              f"Login links work once, for {self.pending_ttl // 60} minutes, and end after "
+                              f"{self.max_login_attempts} failed attempts.", 400)
+
+    def _already_done(self) -> Response:
+        # A browser re-submitted a login that already succeeded (seen with claude.ai's connector flow).
+        return self._dead_end("Login already completed",
+                              "Your login was accepted a moment ago and the browser sent the form a second "
+                              "time. If your app now shows the connector without tools, it dropped that "
+                              "finished login.", 200)
+
+    async def _context(self, pending_id: str, pending: dict):
+        """Who the pending login is for, and the page that shows it."""
         params = AuthorizationParams.model_validate(pending["params"])
         client = await self.get_client(pending["client_id"])
         redirect = str(params.redirect_uri)
-
         who = LoginClient(client_id=pending["client_id"],
                           client_name=(client.client_name if client else None) or pending["client_id"],
                           redirect_uri=redirect)
@@ -266,15 +272,33 @@ class LoginOAuthProvider(OAuthProvider):
         def page(error: str = "", status: int = 200) -> Response:
             return login_page(service_name=self.service_name, fields=self.fields, pending_id=pending_id,
                               client_name=who.client_name, redirect_host=_host(redirect), error=error,
-                              status=status)
+                              status=status, oidc_name=self.oidc.name if self.oidc else None)
+        return params, who, page
+
+    async def _check(self, values: dict, who: LoginClient) -> dict:
+        return await (self.check_login(values, who) if self._check_wants_client else self.check_login(values))
+
+    async def _login(self, request: Request) -> Response:
+        form = await request.form() if request.method == "POST" else request.query_params
+        pending_id = form.get("id", "")
+        pending = await self.store.get(pending_id, collection="pending") \
+            if isinstance(pending_id, str) and pending_id else None
+        if not pending:
+            return self._expired()
+        if pending.get("done"):
+            return self._already_done()
+        params, who, page = await self._context(pending_id, pending)
 
         if request.method == "GET":
             return page()
 
+        if self.oidc_client:
+            return await self._to_provider(pending_id, page)
+
         # Only declared fields, only text: a missing field is "", an uploaded file is dropped.
         values = {f.name: v if isinstance(v := form.get(f.name, ""), str) else "" for f in self.fields}
         try:
-            grant = await (self.check_login(values, who) if self._check_wants_client else self.check_login(values))
+            grant = await self._check(values, who)
         except LoginRejected as rejected:
             await asyncio.sleep(self.failed_login_delay)
             attempts = pending["attempts"] + 1
@@ -287,9 +311,68 @@ class LoginOAuthProvider(OAuthProvider):
         except Exception:
             log.exception("check_login failed")  # never log the form
             return page(f"Could not reach {self.service_name}.", 502)
+        return await self._complete(pending_id, params, grant)
 
+    def _callback_url(self) -> str:
+        return f"{str(self.base_url).rstrip('/')}/login/callback"
+
+    async def _to_provider(self, pending_id: str, page) -> Response:
+        """Send the browser to the provider. The state, PKCE verifier and nonce wait in the store, once."""
+        state, nonce = secrets.token_urlsafe(32), secrets.token_urlsafe(32)
+        verifier, challenge = pkce_pair()
+        try:
+            url = await self.oidc_client.authorize_url(state=state, nonce=nonce, challenge=challenge,
+                                                       redirect_uri=self._callback_url())
+        except OidcError as e:
+            return page(str(e), 502)
+        await self.store.put(state, {"pending_id": pending_id, "verifier": verifier, "nonce": nonce},
+                             collection="oidc", ttl=self.pending_ttl)
+        return RedirectResponse(url, status_code=303)
+
+    async def _callback(self, request: Request) -> Response:
+        """The provider sends the browser back here. The state works once (V2); then the code is traded,
+        the ID token checked, and its claims go to `check_login`."""
+        q = request.query_params
+        state = q.get("state", "")
+        data = await self.store.get(state, collection="oidc") if state else None
+        if data:
+            await self.store.delete(state, collection="oidc")
+        pending = await self.store.get(data["pending_id"], collection="pending") if data else None
+        if not data or not pending:
+            return self._expired()
+        if pending.get("done"):
+            return self._already_done()
+        name = self.oidc.name
+        if error := q.get("error"):
+            return self._dead_end(f"Sign-in at {name} not completed",
+                                  f"{name} answered \"{error}\". Go back to your app and start the login again.", 400)
+        params, who, page = await self._context(data["pending_id"], pending)
+        try:
+            id_token = await self.oidc_client.exchange(code=q.get("code", ""), verifier=data["verifier"],
+                                                       redirect_uri=self._callback_url())
+            claims = await self.oidc_client.verify(id_token, data["nonce"])
+        except OidcError as e:
+            log.warning("sign-in at the provider failed: %s", e)
+            return self._dead_end(f"Sign-in at {name} failed", f"{e} Go back to your app and start the login again.",
+                                  400)
+        try:
+            grant = await self._check(claims, who)
+        except LoginRejected as rejected:
+            await asyncio.sleep(self.failed_login_delay)
+            return page(str(rejected), 403)
+        except Exception:
+            log.exception("check_login failed")  # never log the claims
+            return page(f"Could not reach {self.service_name}.", 502)
+        return await self._complete(data["pending_id"], params, grant)
+
+    async def _complete(self, pending_id: str, params: AuthorizationParams, grant: dict) -> Response:
+        """A login was accepted: one code for the client, and the pending login marked done."""
+        pending = await self.store.get(pending_id, collection="pending")
+        if not pending or pending.get("done"):
+            return self._already_done()
         # Keep a short-lived marker instead of deleting, so a replayed form gets an honest answer.
         await self.store.put(pending_id, {"done": True}, collection="pending", ttl=self.pending_ttl)
+        redirect = str(params.redirect_uri)
         code = AuthorizationCode(code=self.token_prefix + secrets.token_urlsafe(32), client_id=pending["client_id"],
                                  scopes=params.scopes or [], expires_at=time.time() + self.code_ttl,
                                  code_challenge=params.code_challenge, redirect_uri=params.redirect_uri,

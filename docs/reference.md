@@ -2,7 +2,7 @@
 
 ```python
 from mcp_login_oauth import (BearerPrefixMiddleware, LoginClient, LoginField, LoginOAuthProvider,
-                             LoginRejected, build_store)
+                             LoginRejected, OidcLogin, build_store)
 ```
 
 ## `LoginOAuthProvider`
@@ -14,7 +14,8 @@ The FastMCP auth provider: pass it as `FastMCP(..., auth=...)`.
 | `base_url` | The server's public URL. It is the issuer. |
 | `store` | Where clients, login links, codes and tokens live; usually `build_store(...)`. |
 | `service_name` | Shown on the login page ("Log in to Trilium Notes"). |
-| `fields` | The login form, a list of `LoginField`. |
+| `fields` | The login form, a list of `LoginField`. Empty with `oidc`. |
+| `oidc` | Optional: sign in at an OpenID Connect provider instead of a form (`OidcLogin`, below). |
 | `check_login` | Turns the submitted form into the grant (below). |
 | `token_prefix` | Prefix of every code and token this server issues, e.g. `"tmcp_"`. |
 | `on_revoke` | Optional clean-up when a client revokes (below). |
@@ -27,7 +28,7 @@ Tools read the grant from the access token: `get_access_token().claims["grant"]`
 
 | Argument | Signature | Purpose |
 |---|---|---|
-| `check_login` | `async (form: Mapping[str, str]) -> dict`<br>or `async (form, client: LoginClient) -> dict` | Turn the submitted form into the grant, or raise `LoginRejected("shown on the page")`. Any other exception shows "Could not reach <service>" (HTTP 502) and doesn't count as a failed attempt. Take a second argument to learn which client the login is for. |
+| `check_login` | `async (form: Mapping[str, str]) -> dict`<br>or `async (form, client: LoginClient) -> dict` | Turn the submitted form (with `oidc`: the verified ID token's claims) into the grant, or raise `LoginRejected("shown on the page")`. Any other exception shows "Could not reach <service>" (HTTP 502) and doesn't count as a failed attempt. Take a second argument to learn which client the login is for. |
 | `on_revoke` | `async (grant: dict) -> None` | Clean up when a client revokes, for example log out a minted token. Failures are logged; the revocation still happens. |
 | `verify_static` | `async (token: str) -> dict \| None` | Accept a header token that isn't an OAuth token (a raw service token, a static password); the returned dict is the grant. Tokens starting with `token_prefix` never reach it. |
 
@@ -64,3 +65,22 @@ A Fernet-encrypted file tree under `directory`. A changed secret turns every sto
 ## `BearerPrefixMiddleware`
 
 Clients that send a raw token without `Bearer ` (ETAPI clients) need `BearerPrefixMiddleware(app)` around the app. `BearerPrefixMiddleware(app, schemes=("Token",))` also rewrites `Token <token>`, the form Paperless clients send.
+
+## `OidcLogin`
+
+```python
+OidcLogin(issuer, client_id, client_secret=None, scopes=("openid", "profile", "email"),
+          name="single sign-on", verify_tls=True)
+```
+
+Sign in at an OpenID Connect provider (Authentik, Keycloak, …) instead of a form. Pass it as `oidc=` with `fields=[]`. The login page keeps the consent card and shows one button, "Continue with <name>"; the provider's answer comes back to `<base_url>/login/callback`, which you register there as the redirect URI.
+
+| Field | |
+|---|---|
+| `issuer` | The provider's issuer, exactly as it publishes it. Authentik: `https://<host>/application/o/<slug>/`. Discovery is read from `<issuer>/.well-known/openid-configuration`. |
+| `client_id`, `client_secret` | The client registered at the provider. Without a secret the client is public and relies on PKCE alone. |
+| `scopes` | Asked for at the provider. Authentik puts `groups` into `profile`. |
+| `name` | Shown on the button and in error pages. |
+| `verify_tls` | `False` turns certificate checks off for the provider's endpoints; never the default. |
+
+`check_login` then receives the ID token's claims after the library checked its signature (the provider's JWKS), issuer, audience (`client_id`), expiry and nonce. It decides who gets in: raise `LoginRejected("…")` for someone who may not, and the page shows the message with the button to try again.

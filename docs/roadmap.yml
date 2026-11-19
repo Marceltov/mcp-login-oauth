@@ -23,6 +23,15 @@ items:
       Fetch and validate the document (HTTPS only, size and time limits), take its `redirect_uris`, cache it within limits, and advertise support in the metadata. Dynamic registration stays.
 
   # ---- done, newest first ----------------------------------------------------------------------------------------------
+  - id: oidc-login
+    status: done
+    date: 2026-11-19
+    icon: account-key-outline
+    title: v0.4.0, sign in through an OpenID Connect provider
+    summary: "`oidc=OidcLogin(...)`: the login button continues at Authentik or any OIDC provider; the verified ID token's claims go to `check_login`."
+    links:
+      - {label: "ADR 0004", url: "https://mcp-login-oauth.marceltov.de/adr/0004-sign-in-through-an-oidc-provider/"}
+
   - id: login-page-design
     status: done
     date: 2026-11-19
