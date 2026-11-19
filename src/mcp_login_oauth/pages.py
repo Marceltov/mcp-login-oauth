@@ -111,26 +111,30 @@ def _inputs(fields: Sequence[LoginField]) -> str:
 
 
 def login_page(*, service_name: str, fields: Sequence[LoginField], pending_id: str, client_name: str,
-               redirect_host: str, error: str = "", status: int = 200) -> HTMLResponse:
-    """Who is asking, where the code goes, and the form."""
+               redirect_host: str, error: str = "", status: int = 200, oidc_name: str | None = None) -> HTMLResponse:
+    """Who is asking, where the code goes, and the form. With `oidc_name`, the form is one button that
+    continues at that provider."""
     err = f'<p class="error" role="alert">{escape(error)}</p>' if error else ""
     inputs = _inputs(fields)
+    button = f"Continue with {escape(oidc_name)}" if oidc_name else "Authorize"
     return _page(service_name, "Sign in",
                  f'{err}<p class="consent"><b>{escape(client_name)}</b> wants access to your {escape(service_name)}. '
                  f'After login you will be sent to <b class="host">{escape(redirect_host)}</b>. '
                  '<span class="warn">Only continue if you started this.</span></p>'
                  f'<form method="post"><input type="hidden" name="id" value="{escape(pending_id)}">'
-                 f"{inputs}<button>Authorize</button></form>", status)
+                 f"{inputs}<button>{button}</button></form>", status)
 
 
-def dead_end_page(service_name: str, heading: str, what: str, status: int) -> HTMLResponse:
+def dead_end_page(service_name: str, heading: str, what: str, status: int, *, interrupted: bool = True) -> HTMLResponse:
     """A login that can't continue from here. The usual cause is the MCP client interrupting its own
     flow (claude.ai asking you to log in to claude.ai partway through, then dropping the finished login),
-    so say that it isn't the server's fault and give the fix."""
+    so say that it isn't the server's fault and give the fix. With `interrupted=False` (the sign-in at an
+    identity provider failed) only `what` is shown, which names the cause and the next step."""
+    steps = ("<div class=\"steps\">"
+             "<p><b>Why</b>Your app most likely interrupted its own login, for example by asking you to "
+             "log in to the app itself partway through, and then lost track of this one. Nothing is wrong "
+             "with this server.</p><p><b>Fix</b>Go back to your app and use its Reconnect button, or "
+             "remove the connector and add it again. Being logged in to the app first avoids the "
+             "interruption.</p></div>") if interrupted else ""
     return _page(service_name, "Login can't continue",
-                 f'<h2>{escape(heading)}</h2><p class="consent">{escape(what)}</p><div class="steps">'
-                 "<p><b>Why</b>Your app most likely interrupted its own login, for example by asking you to "
-                 "log in to the app itself partway through, and then lost track of this one. Nothing is wrong "
-                 "with this server.</p><p><b>Fix</b>Go back to your app and use its Reconnect button, or "
-                 "remove the connector and add it again. Being logged in to the app first avoids the "
-                 "interruption.</p></div>", status)
+                 f'<h2>{escape(heading)}</h2><p class="consent">{escape(what)}</p>{steps}', status)

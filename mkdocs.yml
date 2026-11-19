@@ -26,6 +26,7 @@ nav:
       - One library for all FastMCP servers: adr/0001-shared-login-oauth-library.md
       - check_login learns the client: adr/0002-check-login-learns-the-client.md
       - MIT, not AGPL: adr/0003-mit-licence.md
+      - Sign in through an OpenID Connect provider: adr/0004-sign-in-through-an-oidc-provider.md
 
 theme:
   name: material
