@@ -54,3 +54,11 @@ A client that names a `resource` (RFC 8707) gets codes and tokens bound to it. A
 ## Moving to this library
 
 A server that moves here from its own OAuth code doesn't carry its stored logins over: connected clients sign in once more.
+
+## The pages
+
+![The login page with a refused login, and the page for a login that can't continue](assets/login-pages.jpg)
+
+The login page names the client and the host the code goes to, and ends that sentence with "Only continue if you started this." A refused login shows its message above it, announced to screen readers. Fields with a `group` sit in one collapsed section. The page for a login that can't continue says what happened, why it usually happens, and how to fix it.
+
+Both pages are one HTML response with their own stylesheet: no JavaScript, no web fonts, nothing loaded from elsewhere. They follow the browser's light or dark setting, show a visible focus ring, and can't be framed (`X-Frame-Options: DENY`).

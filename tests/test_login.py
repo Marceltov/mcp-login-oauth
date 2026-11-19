@@ -109,4 +109,4 @@ def test_page_shows_the_real_redirect_host(app_factory):
                                         "code_challenge": "x" * 43, "code_challenge_method": "S256"},
                   follow_redirects=False)
         page = c.get(r.headers["location"]).text
-    assert "<b>localhost:9</b>" in page and "claude.ai@" not in page
+    assert '<b class="host">localhost:9</b>' in page and "claude.ai@" not in page

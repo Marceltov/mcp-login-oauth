@@ -67,3 +67,21 @@ def test_fields_of_one_group_share_one_section():
     html = page(fields=fields).body.decode()
     assert html.count("<details>") == 1
     assert html.index('name="b"') < html.index("<details>") < html.index('name="a"') < html.index('name="c"')
+
+
+def test_page_is_self_contained_and_themed():
+    for html in (page(error="No.").body.decode(), dead_end_page("X", "Gone", "Expired.", 400).body.decode()):
+        assert "<script" not in html and "http://" not in html and "https://" not in html
+        assert "prefers-color-scheme:dark" in html and ":focus-visible" in html
+
+
+def test_error_is_announced_and_the_warning_stands_out():
+    html = page(error="Wrong password.").body.decode()
+    assert '<p class="error" role="alert">Wrong password.</p>' in html
+    assert '<span class="warn">Only continue if you started this.</span>' in html
+    assert html.index('class="error"') < html.index("<form")
+
+
+def test_dead_end_says_why_and_how_to_fix():
+    html = dead_end_page("X", "Login link expired", "Links work once.", 400).body.decode()
+    assert "<b>Why</b>" in html and "<b>Fix</b>" in html and "Login can&#x27;t continue" in html
