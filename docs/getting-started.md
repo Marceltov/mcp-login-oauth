@@ -72,7 +72,7 @@ auth = LoginOAuthProvider(
                    client_secret=client_secret, name="Authentik"))
 ```
 
-In Authentik: an OAuth2/OpenID provider (confidential, redirect URI `https://openbb-mcp.example.org/login/callback`, the default scope mappings `openid`, `profile`, `email`) and an application for it. Who may sign in at all can also be limited there with a policy binding; `check_login` is the server's own say.
+In Authentik: an OAuth2/OpenID provider (confidential, redirect URI `https://openbb-mcp.example.org/login/callback`, the scope mappings `openid`, `profile`, `email`, grant type `authorization_code`) and an application for it. A provider created through the API or a blueprint starts without grant types; Authentik then refuses the login as "otherwise malformed". Who may sign in at all can also be limited there with a policy binding; `check_login` is the server's own say.
 
 ## Next
 
