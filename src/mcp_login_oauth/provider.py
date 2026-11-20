@@ -352,6 +352,10 @@ class LoginOAuthProvider(OAuthProvider):
             tokens = await self.oidc_client.exchange(code=q.get("code", ""), verifier=data["verifier"],
                                                      redirect_uri=self._callback_url())
             claims = await self.oidc_client.claims(tokens, data["nonce"])
+            if self.oidc.pass_access_token:
+                if not isinstance(tokens.get("access_token"), str):
+                    raise OidcError(f"{name} sent no access token.")
+                claims = {**claims, "access_token": tokens["access_token"]}
         except OidcError as e:
             log.warning("sign-in at the provider failed: %s", e)
             return self._dead_end(f"Sign-in at {name} failed", f"{e} Go back to your app and start the login again.",
